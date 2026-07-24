@@ -92,9 +92,18 @@ export default async function MedicosPage({
                     <Stethoscope className="w-6 h-6 text-blue-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold truncate text-foreground group-hover:text-blue-500 transition-colors">
-                      Dr(a). {medico.nome}
-                    </h3>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-semibold truncate text-foreground group-hover:text-blue-500 transition-colors">
+                        Dr(a). {medico.nome}
+                      </h3>
+                      <Link
+                        href={`/medicos/${medico.id}/editar`}
+                        className="text-muted-foreground hover:text-blue-500 transition-colors shrink-0 p-1"
+                        title="Editar Médico"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </Link>
+                    </div>
                     <p className="text-xs text-blue-500 font-medium mt-0.5">
                       {medico.especialidade}
                     </p>
