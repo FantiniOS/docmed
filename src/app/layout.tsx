@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/layout/sidebar";
-import { MobileNav } from "@/components/layout/mobile-nav";
+import { MobileHeader } from "@/components/layout/mobile-header";
+import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
 const inter = Inter({
@@ -47,15 +48,17 @@ export default function RootLayout({
           {/* Desktop Sidebar */}
           <Sidebar />
 
+          {/* Mobile Header (Hamburger Menu) */}
+          <MobileHeader />
+
           {/* Main Content — offset by sidebar width on desktop */}
-          <main className="lg:pl-64 pb-20 lg:pb-0 min-h-dvh">
+          <main className="lg:pl-64 min-h-dvh">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
               {children}
             </div>
           </main>
 
-          {/* Mobile Bottom Navigation */}
-          <MobileNav />
+          <Toaster />
         </TooltipProvider>
       </body>
     </html>

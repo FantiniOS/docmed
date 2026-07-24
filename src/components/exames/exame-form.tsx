@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import {
   exameSchema,
@@ -38,9 +39,10 @@ import type { Familiar, Medico } from "@/types/database";
 interface ExameFormProps {
   familiares: Familiar[];
   medicos: Medico[];
+  initialData?: ExameSchemaType & { id?: string };
 }
 
-export function ExameForm({ familiares, medicos }: ExameFormProps) {
+export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export function ExameForm({ familiares, medicos }: ExameFormProps) {
     formState: { errors },
   } = useForm<ExameSchemaType>({
     resolver: zodResolver(exameSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       familiar_id: "",
       medico_id: null,
       nome_exame: "",
@@ -68,17 +70,20 @@ export function ExameForm({ familiares, medicos }: ExameFormProps) {
     setSubmitError(null);
 
     try {
-      const { error } = await supabase.from("exames").insert([data]);
-
-      if (error) {
-        setSubmitError(error.message);
-        return;
+      if (initialData?.id) {
+        const { error } = await supabase.from("exames").update(data).eq("id", initialData.id);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Exame atualizado.", type: "success" });
+      } else {
+        const { error } = await supabase.from("exames").insert([data]);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Exame cadastrado.", type: "success" });
       }
 
       router.push("/exames");
       router.refresh();
-    } catch {
-      setSubmitError("Erro inesperado ao salvar. Tente novamente.");
+    } catch (err: any) {
+      setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +102,7 @@ export function ExameForm({ familiares, medicos }: ExameFormProps) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <FileText className="w-6 h-6 text-emerald-500" />
-          Adicionar Exame
+          {initialData ? "Editar Exame" : "Adicionar Exame"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Registre os resultados de exames da sua família.

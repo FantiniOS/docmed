@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import { consultaSchema, type ConsultaSchemaType } from "@/lib/validations/consulta";
 import type { Familiar, Medico } from "@/types/database";
@@ -34,9 +35,10 @@ import type { Familiar, Medico } from "@/types/database";
 interface ConsultaFormProps {
   familiares: Familiar[];
   medicos: Medico[];
+  initialData?: ConsultaSchemaType & { id?: string };
 }
 
-export function ConsultaForm({ familiares, medicos }: ConsultaFormProps) {
+export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export function ConsultaForm({ familiares, medicos }: ConsultaFormProps) {
     formState: { errors },
   } = useForm<ConsultaSchemaType>({
     resolver: zodResolver(consultaSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       familiar_id: "",
       medico_id: "",
       data_consulta: "",
@@ -63,17 +65,20 @@ export function ConsultaForm({ familiares, medicos }: ConsultaFormProps) {
     setSubmitError(null);
 
     try {
-      const { error } = await supabase.from("consultas").insert([data]);
-
-      if (error) {
-        setSubmitError(error.message);
-        return;
+      if (initialData?.id) {
+        const { error } = await supabase.from("consultas").update(data).eq("id", initialData.id);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Consulta atualizada.", type: "success" });
+      } else {
+        const { error } = await supabase.from("consultas").insert([data]);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Consulta agendada.", type: "success" });
       }
 
       router.push("/consultas");
       router.refresh();
-    } catch {
-      setSubmitError("Erro inesperado ao salvar. Tente novamente.");
+    } catch (err: any) {
+      setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -92,10 +97,10 @@ export function ConsultaForm({ familiares, medicos }: ConsultaFormProps) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <CalendarCheck className="w-6 h-6 text-blue-500" />
-          Agendar Consulta
+          {initialData ? "Editar Consulta" : "Agendar Consulta"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Registre uma nova consulta médica.
+          Registre os dados da consulta médica.
         </p>
       </div>
 

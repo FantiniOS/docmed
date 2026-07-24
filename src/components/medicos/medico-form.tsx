@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import {
   medicoSchema,
@@ -33,7 +34,7 @@ import {
   especialidades,
 } from "@/lib/validations/medico";
 
-export function MedicoForm() {
+export function MedicoForm({ initialData }: { initialData?: MedicoSchemaType & { id?: string } }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function MedicoForm() {
     formState: { errors },
   } = useForm<MedicoSchemaType>({
     resolver: zodResolver(medicoSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       nome: "",
       especialidade: "",
       telefone: null,
@@ -59,17 +60,20 @@ export function MedicoForm() {
     setSubmitError(null);
 
     try {
-      const { error } = await supabase.from("medicos").insert([data]);
-
-      if (error) {
-        setSubmitError(error.message);
-        return;
+      if (initialData?.id) {
+        const { error } = await supabase.from("medicos").update(data).eq("id", initialData.id);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Médico atualizado.", type: "success" });
+      } else {
+        const { error } = await supabase.from("medicos").insert([data]);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Médico cadastrado.", type: "success" });
       }
 
       router.push("/medicos");
       router.refresh();
-    } catch {
-      setSubmitError("Erro inesperado ao salvar. Tente novamente.");
+    } catch (err: any) {
+      setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -88,10 +92,10 @@ export function MedicoForm() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Stethoscope className="w-6 h-6 text-blue-500" />
-          Cadastrar Médico
+          {initialData ? "Editar Médico" : "Cadastrar Médico"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Adicione um novo profissional de saúde.
+          Preencha os dados do profissional de saúde.
         </p>
       </div>
 

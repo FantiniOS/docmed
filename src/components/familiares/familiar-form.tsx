@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
 import {
   Select,
   SelectContent,
@@ -35,7 +36,7 @@ import {
   tiposSanguineos,
 } from "@/lib/validations/familiar";
 
-export function FamiliarForm() {
+export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType & { id?: string } }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -47,7 +48,7 @@ export function FamiliarForm() {
     formState: { errors },
   } = useForm<FamiliarSchemaType>({
     resolver: zodResolver(familiarSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       nome: "",
       data_nascimento: "",
       tipo_sanguineo: null,
@@ -62,17 +63,20 @@ export function FamiliarForm() {
     setSubmitError(null);
 
     try {
-      const { error } = await supabase.from("familiares").insert([data]);
-
-      if (error) {
-        setSubmitError(error.message);
-        return;
+      if (initialData?.id) {
+        const { error } = await supabase.from("familiares").update(data).eq("id", initialData.id);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Familiar atualizado.", type: "success" });
+      } else {
+        const { error } = await supabase.from("familiares").insert([data]);
+        if (error) throw error;
+        toast.create({ title: "Sucesso!", description: "Familiar cadastrado.", type: "success" });
       }
 
       router.push("/familiares");
       router.refresh();
-    } catch {
-      setSubmitError("Erro inesperado ao salvar. Tente novamente.");
+    } catch (err: any) {
+      setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +97,7 @@ export function FamiliarForm() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <User className="w-6 h-6 text-emerald-500" />
-          Cadastrar Familiar
+          {initialData ? "Editar Familiar" : "Cadastrar Familiar"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Preencha os dados do membro da família.
