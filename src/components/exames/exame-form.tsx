@@ -73,11 +73,11 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
       if (initialData?.id) {
         const { error } = await supabase.from("exames").update(data).eq("id", initialData.id);
         if (error) throw error;
-        toast.create({ title: "Sucesso!", description: "Exame atualizado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Exame atualizado.", type: "success" });
       } else {
         const { error } = await supabase.from("exames").insert([data]);
         if (error) throw error;
-        toast.create({ title: "Sucesso!", description: "Exame cadastrado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Exame cadastrado.", type: "success" });
       }
 
       router.push("/exames");

@@ -66,11 +66,11 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
       if (initialData?.id) {
         const { error } = await supabase.from("familiares").update(data).eq("id", initialData.id);
         if (error) throw error;
-        toast.create({ title: "Sucesso!", description: "Familiar atualizado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Familiar atualizado.", type: "success" });
       } else {
         const { error } = await supabase.from("familiares").insert([data]);
         if (error) throw error;
-        toast.create({ title: "Sucesso!", description: "Familiar cadastrado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Familiar cadastrado.", type: "success" });
       }
 
       router.push("/familiares");

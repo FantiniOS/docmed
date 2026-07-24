@@ -63,11 +63,11 @@ export function MedicoForm({ initialData }: { initialData?: MedicoSchemaType & {
       if (initialData?.id) {
         const { error } = await supabase.from("medicos").update(data).eq("id", initialData.id);
         if (error) throw error;
-        toast.create({ title: "Sucesso!", description: "Médico atualizado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Médico atualizado.", type: "success" });
       } else {
         const { error } = await supabase.from("medicos").insert([data]);
         if (error) throw error;
-        toast.create({ title: "Sucesso!", description: "Médico cadastrado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Médico cadastrado.", type: "success" });
       }
 
       router.push("/medicos");
