@@ -1,0 +1,118 @@
+import { FileText, Calendar, User, Eye } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import type { ExameComRelacionamentos } from "@/types/database";
+
+interface RecentExamsProps {
+  exames: ExameComRelacionamentos[];
+}
+
+/**
+ * Formata data ISO para exibição curta (ex: "24/07/2026").
+ */
+function formatarData(dataString: string): string {
+  const date = new Date(dataString);
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+/**
+ * Retorna a cor do badge baseado no tipo de exame.
+ */
+function getTipoExameStyle(tipo: string | null): string {
+  if (!tipo) return "bg-muted text-muted-foreground";
+  const t = tipo.toLowerCase();
+  if (t.includes("sangue") || t.includes("hemograma")) return "bg-red-500/10 text-red-400";
+  if (t.includes("imagem") || t.includes("raio") || t.includes("tomografia")) return "bg-blue-500/10 text-blue-400";
+  if (t.includes("urina") || t.includes("fezes")) return "bg-amber-500/10 text-amber-400";
+  return "bg-violet-500/10 text-violet-400";
+}
+
+export function RecentExams({ exames }: RecentExamsProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-amber-500" />
+          Últimos Exames
+        </CardTitle>
+        <CardAction>
+          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground">
+            <Link href="/exames">Ver todos</Link>
+          </Button>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent>
+        {exames.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+              <FileText className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Nenhum exame registrado
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {exames.map((exame) => (
+              <div
+                key={exame.id}
+                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-accent/50 group"
+              >
+                {/* Icon */}
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10 shrink-0">
+                  <FileText className="w-4 h-4 text-amber-500" />
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {exame.nome_exame}
+                    </span>
+                    {exame.tipo_exame && (
+                      <span
+                        className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium ${getTipoExameStyle(
+                          exame.tipo_exame
+                        )}`}
+                      >
+                        {exame.tipo_exame}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                    {exame.familiares && (
+                      <span className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        {exame.familiares.nome.split(" ")[0]}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {formatarData(exame.data_exame)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* View action */}
+                {exame.arquivo_url && (
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

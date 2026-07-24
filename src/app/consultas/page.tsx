@@ -1,0 +1,199 @@
+import Link from "next/link";
+import { CalendarCheck, Plus, Search, User, Stethoscope, Clock } from "lucide-react";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import type { ConsultaComRelacionamentos } from "@/types/database";
+
+function formatarData(dataString: string): { data: string; hora: string } {
+  const date = new Date(dataString);
+  const meses = [
+    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+    "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+  ];
+  const dia = date.getDate();
+  const mes = meses[date.getMonth()];
+  const ano = date.getFullYear();
+  const hora = date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return { data: `${dia} ${mes} ${ano}`, hora };
+}
+
+function getStatusBadge(dataString: string) {
+  const data = new Date(dataString);
+  const hoje = new Date();
+  
+  if (data < hoje) {
+    return <Badge variant="secondary">Realizada</Badge>;
+  }
+  
+  const diferenca = data.getTime() - hoje.getTime();
+  const dias = Math.ceil(diferenca / (1000 * 3600 * 24));
+  
+  if (dias <= 2) {
+    return <Badge variant="destructive" className="bg-amber-500 hover:bg-amber-600 text-white">Próxima</Badge>;
+  }
+  
+  return <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">Agendada</Badge>;
+}
+
+export default async function ConsultasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const supabase = await createServerSupabaseClient();
+  const { q } = await searchParams;
+
+  // Em um caso real complexo com Supabase, a busca textual (q) 
+  // pode precisar de uma view ou RPC para buscar em relacionamentos.
+  // Para MVP, vamos trazer as consultas ordenadas.
+  let query = supabase
+    .from("consultas")
+    .select("*, familiares(*), medicos(*)")
+    .order("data_consulta", { ascending: false });
+
+  const { data: consultas, error } = await query;
+  let list = (consultas as ConsultaComRelacionamentos[]) || [];
+
+  // Filtro simplificado no client para o MVP, já que as tabelas relacionadas
+  // complicam o `.ilike()` direto no Supabase.
+  if (q) {
+    const termo = q.toLowerCase();
+    list = list.filter(
+      (c) =>
+        c.motivo?.toLowerCase().includes(termo) ||
+        c.familiares?.nome.toLowerCase().includes(termo) ||
+        c.medicos?.nome.toLowerCase().includes(termo)
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <CalendarCheck className="w-6 h-6 text-blue-500" />
+            Consultas
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Histórico e próximos agendamentos médicos.
+          </p>
+        </div>
+        <Link
+          href="/consultas/novo"
+          className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto"
+        >
+          <Plus className="w-4 h-4" />
+          Agendar Consulta
+        </Link>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <form>
+          <Input
+            name="q"
+            defaultValue={q}
+            placeholder="Buscar por familiar, médico ou motivo..."
+            className="pl-9 h-11"
+          />
+        </form>
+      </div>
+
+      {list.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
+              <CalendarCheck className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Nenhuma consulta encontrada
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                {q
+                  ? "Não foram encontrados resultados para a sua busca."
+                  : "Não há registros de consultas. Agende uma nova consulta para acompanhar."}
+              </p>
+            </div>
+            {!q && (
+              <Link
+                href="/consultas/novo"
+                className="mt-2 inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" /> Agendar
+              </Link>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-3">
+          {list.map((consulta) => {
+            const { data, hora } = formatarData(consulta.data_consulta);
+            
+            return (
+              <Card key={consulta.id} className="group transition-all duration-200 hover:shadow-md hover:border-blue-500/30 overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="flex flex-col sm:flex-row">
+                    {/* Data/Hora Section (Esquerda no desktop) */}
+                    <div className="bg-muted/30 p-4 sm:w-40 flex sm:flex-col items-center sm:items-start justify-between sm:justify-center border-b sm:border-b-0 sm:border-r border-border shrink-0">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-foreground">{data}</span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                          <Clock className="w-3 h-3" /> {hora}
+                        </span>
+                      </div>
+                      <div className="sm:mt-2">
+                        {getStatusBadge(consulta.data_consulta)}
+                      </div>
+                    </div>
+
+                    {/* Informações Section */}
+                    <div className="p-4 flex-1">
+                      <h3 className="text-base font-semibold text-foreground group-hover:text-blue-500 transition-colors">
+                        {consulta.motivo || "Consulta de Rotina"}
+                      </h3>
+                      
+                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <User className="w-4 h-4 shrink-0 text-emerald-500" />
+                          <span className="truncate">{consulta.familiares?.nome || "Familiar"}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Stethoscope className="w-4 h-4 shrink-0 text-blue-500" />
+                          <span className="truncate">Dr(a). {consulta.medicos?.nome || "Médico"}</span>
+                        </div>
+                      </div>
+
+                      {(consulta.diagnostico || consulta.prescricao) && (
+                        <div className="mt-4 pt-3 border-t border-border grid sm:grid-cols-2 gap-3">
+                          {consulta.diagnostico && (
+                            <div>
+                              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Diagnóstico</span>
+                              <p className="text-xs mt-0.5 text-foreground">{consulta.diagnostico}</p>
+                            </div>
+                          )}
+                          {consulta.prescricao && (
+                            <div>
+                              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Prescrição</span>
+                              <p className="text-xs mt-0.5 text-foreground">{consulta.prescricao}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

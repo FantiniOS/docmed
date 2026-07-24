@@ -1,0 +1,331 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  ArrowLeft,
+  User,
+  Droplets,
+  AlertTriangle,
+  Heart,
+  Pill,
+  Calendar,
+  FileText,
+  Stethoscope,
+  Clock,
+} from "lucide-react";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import type { Familiar, ExameComRelacionamentos } from "@/types/database";
+
+interface FamiliarPageProps {
+  params: Promise<{ id: string }>;
+}
+
+/**
+ * Calcula a idade a partir da data de nascimento.
+ */
+function calcularIdade(dataNascimento: string): number {
+  const hoje = new Date();
+  const nascimento = new Date(dataNascimento);
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const m = hoje.getMonth() - nascimento.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+    idade--;
+  }
+  return idade;
+}
+
+/**
+ * Formata data ISO para exibição.
+ */
+function formatarData(dataString: string): string {
+  return new Date(dataString).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/**
+ * Busca os dados do familiar e seus exames.
+ */
+async function getFamiliarData(id: string) {
+  const supabase = await createServerSupabaseClient();
+
+  const [familiarResult, examesResult] = await Promise.all([
+    supabase.from("familiares").select("*").eq("id", id).single(),
+    supabase
+      .from("exames")
+      .select("*, medicos(*)")
+      .eq("familiar_id", id)
+      .order("data_exame", { ascending: false })
+      .limit(10),
+  ]);
+
+  return {
+    familiar: familiarResult.data as Familiar | null,
+    exames: (examesResult.data as ExameComRelacionamentos[]) ?? [],
+  };
+}
+
+export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) {
+  const { id } = await params;
+
+  let data;
+  try {
+    data = await getFamiliarData(id);
+  } catch {
+    notFound();
+  }
+
+  if (!data.familiar) {
+    notFound();
+  }
+
+  const { familiar, exames } = data;
+  const idade = calcularIdade(familiar.data_nascimento);
+  const alergias = familiar.alergias
+    ?.split(",")
+    .map((a) => a.trim())
+    .filter(Boolean);
+  const doencas = familiar.doencas_cronicas
+    ?.split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
+  const medicamentos = familiar.medicamentos_uso_continuo
+    ?.split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
+      {/* Back link */}
+      <Link
+        href="/familiares"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Voltar para Familiares
+      </Link>
+
+      {/* Cabeçalho do Perfil */}
+      <div className="flex items-start gap-4">
+        <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xl font-bold shadow-lg shadow-emerald-500/20 shrink-0">
+          {familiar.nome
+            .split(" ")
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight truncate">
+            {familiar.nome}
+          </h1>
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <span className="text-sm text-muted-foreground">
+              {idade} anos • {formatarData(familiar.data_nascimento)}
+            </span>
+            {familiar.tipo_sanguineo && (
+              <Badge variant="outline" className="gap-1">
+                <Droplets className="w-3 h-3 text-red-400" />
+                {familiar.tipo_sanguineo}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Grid de Informações Médicas Críticas */}
+      <div className="grid sm:grid-cols-3 gap-4">
+        {/* Alergias — destaque visual para emergências */}
+        <Card
+          className={
+            alergias && alergias.length > 0
+              ? "ring-amber-500/30 bg-amber-500/5"
+              : ""
+          }
+        >
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertTriangle
+                className={`w-4 h-4 ${
+                  alergias && alergias.length > 0
+                    ? "text-amber-500"
+                    : "text-muted-foreground"
+                }`}
+              />
+              Alergias
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {alergias && alergias.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {alergias.map((alergia) => (
+                  <Badge
+                    key={alergia}
+                    variant="outline"
+                    className="text-amber-500 border-amber-500/30 bg-amber-500/10"
+                  >
+                    {alergia}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Nenhuma alergia registrada
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Doenças Crônicas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Heart className="w-4 h-4 text-rose-500" />
+              Doenças Crônicas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {doencas && doencas.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {doencas.map((doenca) => (
+                  <Badge
+                    key={doenca}
+                    variant="outline"
+                    className="text-rose-400 border-rose-500/30 bg-rose-500/10"
+                  >
+                    {doenca}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Nenhuma doença crônica registrada
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Medicamentos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Pill className="w-4 h-4 text-blue-500" />
+              Medicamentos Contínuos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {medicamentos && medicamentos.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {medicamentos.map((med) => (
+                  <Badge
+                    key={med}
+                    variant="outline"
+                    className="text-blue-400 border-blue-500/30 bg-blue-500/10"
+                  >
+                    {med}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Nenhum medicamento registrado
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator />
+
+      {/* Últimos Exames */}
+      <div>
+        <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-amber-500" />
+          Últimos Exames
+        </h2>
+
+        {exames.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+              <FileText className="w-8 h-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Nenhum exame registrado para este familiar
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-3">
+            {exames.map((exame) => (
+              <Card key={exame.id} className="transition-all duration-200 hover:bg-accent/30">
+                <CardContent className="flex items-start gap-4 py-4">
+                  {/* Data visual */}
+                  <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-amber-500/10 shrink-0">
+                    <Calendar className="w-4 h-4 text-amber-500 mb-0.5" />
+                    <span className="text-[10px] text-amber-400 font-medium">
+                      {new Date(exame.data_exame).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Conteúdo */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium">
+                        {exame.nome_exame}
+                      </span>
+                      {exame.tipo_exame && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {exame.tipo_exame}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {exame.medicos && (
+                      <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Stethoscope className="w-3 h-3" />
+                        Dr(a). {exame.medicos.nome}
+                        {exame.medicos.especialidade && (
+                          <span>— {exame.medicos.especialidade}</span>
+                        )}
+                      </p>
+                    )}
+
+                    {exame.observacoes && (
+                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                        {exame.observacoes}
+                      </p>
+                    )}
+
+                    {exame.arquivo_url && (
+                      <a
+                        href={exame.arquivo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-400 mt-2 transition-colors"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Ver documento
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Timestamp */}
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
+                    <Clock className="w-3 h-3" />
+                    {new Date(exame.data_exame).getFullYear()}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
