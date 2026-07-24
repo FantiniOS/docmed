@@ -32,11 +32,9 @@ export function MobileHeader() {
       </div>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-foreground">
+        <SheetTrigger render={<Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-foreground" />}>
             <Menu className="w-6 h-6" />
             <span className="sr-only">Abrir menu</span>
-          </Button>
         </SheetTrigger>
         <SheetContent side="right" className="flex flex-col p-0 border-l border-border bg-card w-[280px]">
           <SheetHeader className="p-6 text-left border-b border-border">
