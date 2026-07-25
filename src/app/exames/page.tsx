@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -54,92 +55,119 @@ export default async function ExamesPage() {
       {!exames || exames.length === 0 ? (
         <div className="rounded-md border bg-card p-12 flex flex-col items-center justify-center text-center gap-3">
           <FileText className="w-10 h-10 text-muted-foreground/50" />
-          <p className="text-muted-foreground font-medium">Nenhum exame cadastrado.</p>
+          <p className="text-muted-foreground font-medium">
+            Nenhum exame cadastrado. Adicione o primeiro exame da sua família.
+          </p>
+          <Link
+            href="/exames/novo"
+            className="mt-2 inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-md text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Novo Exame
+          </Link>
         </div>
       ) : (
-        <div className="space-y-6">
+        <Tabs defaultValue={Object.keys(examesAgrupados || {})[0]} className="w-full space-y-6">
+          <div className="overflow-x-auto pb-1">
+            <TabsList className="inline-flex w-max min-w-full justify-start h-auto p-1 bg-muted/50 rounded-lg">
+              {Object.keys(examesAgrupados || {}).map((familiar) => (
+                <TabsTrigger
+                  key={familiar}
+                  value={familiar}
+                  className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-md"
+                >
+                  {familiar}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
           {(Object.entries(examesAgrupados || {}) as [string, any[]][]).map(([familiar, listaExames]) => (
-            <div key={familiar} className="rounded-xl border bg-card overflow-hidden shadow-sm">
-              <div className="bg-muted/30 px-5 py-4 border-b flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <span className="text-emerald-500 font-semibold text-sm">
-                    {familiar.charAt(0).toUpperCase()}
+            <TabsContent key={familiar} value={familiar} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
+                <div className="bg-muted/30 px-5 py-4 border-b flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                      <span className="text-emerald-500 font-semibold text-sm">
+                        {familiar.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold text-base text-foreground">{familiar}</h3>
+                  </div>
+                  <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                    {listaExames.length} {listaExames.length === 1 ? 'exame' : 'exames'}
                   </span>
                 </div>
-                <h3 className="font-semibold text-base text-foreground">{familiar}</h3>
-                <span className="ml-auto bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
-                  {listaExames.length} {listaExames.length === 1 ? 'exame' : 'exames'}
-                </span>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead>Exame</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {listaExames.map((exame) => (
-                      <TableRow key={exame.id}>
-                        <TableCell className="font-medium">{exame.nome_exame}</TableCell>
-                        <TableCell>
-                          {exame.tipo_exame ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
-                              {exame.tipo_exame}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(exame.data_exame), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1 sm:gap-2">
-                            {exame.arquivo_url ? (
-                              <a
-                                href={exame.arquivo_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
-                                title="Visualizar Arquivo"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </a>
-                            ) : (
-                              <div className="p-2 text-muted-foreground/20" title="Sem arquivo">
-                                <Eye className="w-4 h-4" />
-                              </div>
-                            )}
-                            
-                            <Link
-                              href={`/exames/${exame.id}/editar`}
-                              className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
-                              title="Editar"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Link>
-                            
-                            <button
-                              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                              title="Excluir"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </TableCell>
+                
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead>Exame</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {listaExames.map((exame) => (
+                        <TableRow key={exame.id}>
+                          <TableCell className="font-medium">{exame.nome_exame}</TableCell>
+                          <TableCell>
+                            {exame.tipo_exame ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
+                                {exame.tipo_exame}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(exame.data_exame), "dd/MM/yyyy", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1 sm:gap-2">
+                              {exame.arquivo_url ? (
+                                <a
+                                  href={exame.arquivo_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
+                                  title="Visualizar Arquivo"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </a>
+                              ) : (
+                                <div className="p-2 text-muted-foreground/20" title="Sem arquivo">
+                                  <Eye className="w-4 h-4" />
+                                </div>
+                              )}
+                              
+                              <Link
+                                href={`/exames/${exame.id}/editar`}
+                                className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
+                                title="Editar"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Link>
+                              
+                              <button
+                                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                                title="Excluir"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-            </div>
+            </TabsContent>
           ))}
-        </div>
+        </Tabs>
       )}
     </div>
   );
