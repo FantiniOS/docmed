@@ -123,7 +123,7 @@ export default async function DashboardPage() {
         <MetricCard
           title="Consultas"
           value={data.totalConsultas}
-          description="realizadas"
+          description="registradas"
           icon={CalendarCheck}
           accentColor="amber"
         />

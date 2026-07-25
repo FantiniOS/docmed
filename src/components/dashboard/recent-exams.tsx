@@ -1,3 +1,5 @@
+"use client";
+
 import { FileText, Calendar, User, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
