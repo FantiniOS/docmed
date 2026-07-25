@@ -108,10 +108,19 @@ export function UpcomingConsultations({
                           {formatarNome(consulta.familiares.nome)}
                         </span>
                       )}
-                      {consulta.medicos && (
+                      {(() => {
+                        const especialidade = consulta.medicos?.especialidade || consulta.especialidade;
+                        return especialidade ? (
+                          <span className="flex items-center gap-1 text-blue-500 font-medium">
+                            <Stethoscope className="w-3 h-3" />
+                            {especialidade}
+                          </span>
+                        ) : null;
+                      })()}
+                      
+                      {(consulta.medicos || consulta.local_atendimento) && (
                         <span className="flex items-center gap-1">
-                          <Stethoscope className="w-3 h-3" />
-                          Dr. {consulta.medicos.nome.split(" ")[0]}
+                          {consulta.medicos ? `Dr. ${consulta.medicos.nome.split(" ")[0]}` : consulta.local_atendimento}
                         </span>
                       )}
                       <span className="flex items-center gap-1">
