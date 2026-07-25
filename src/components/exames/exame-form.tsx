@@ -213,7 +213,7 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
                       <SelectItem value="none">Nenhum / Não Cadastrado</SelectItem>
                       {medicos.map((med) => (
                         <SelectItem key={med.id} value={med.id}>
-                          Dr(a). {med.nome}
+                          Dr(a). {med.nome} {med.especialidade ? `- ${med.especialidade}` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
