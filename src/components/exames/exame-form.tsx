@@ -13,6 +13,7 @@ import {
   User,
   Stethoscope,
   Link as LinkIcon,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,8 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadingText, setUploadingText] = useState("");
 
   const {
     register,
@@ -70,6 +73,34 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
     setSubmitError(null);
 
     try {
+      let finalArquivoUrl = initialData?.arquivo_url || data.arquivo_url;
+
+      if (file) {
+        setUploadingText("Fazendo upload...");
+        
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("exames")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          toast.add({ title: "Erro", description: "Falha ao enviar arquivo.", type: "error" });
+          throw uploadError;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("exames")
+          .getPublicUrl(filePath);
+
+        finalArquivoUrl = publicUrlData.publicUrl;
+      }
+
+      data.arquivo_url = finalArquivoUrl;
+      setUploadingText("");
+
       if (initialData?.id) {
         const { error } = await supabase.from("exames").update(data).eq("id", initialData.id);
         if (error) throw error;
@@ -267,25 +298,30 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="arquivo_url">
-              <LinkIcon className="w-3.5 h-3.5" />
-              Link do Arquivo (PDF ou Imagem)
+            <Label htmlFor="arquivo">
+              <Upload className="w-3.5 h-3.5" />
+              Arquivo do Exame (PDF ou Imagem)
             </Label>
             <Input
-              id="arquivo_url"
-              type="url"
-              placeholder="https://..."
-              aria-invalid={!!errors.arquivo_url}
-              {...register("arquivo_url")}
+              id="arquivo"
+              type="file"
+              accept=".pdf,image/*"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
-            {errors.arquivo_url && (
-              <p className="text-xs text-destructive">
-                {errors.arquivo_url.message}
+            {initialData?.arquivo_url && !file && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Arquivo atual:{" "}
+                <a 
+                  href={initialData.arquivo_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-emerald-500 hover:underline"
+                >
+                  Ver documento
+                </a>
+                . Envie um novo arquivo para substituir.
               </p>
             )}
-            <p className="text-[11px] text-muted-foreground">
-              Cole o link do laudo do exame. (O recurso de upload direto de arquivos será adicionado em breve).
-            </p>
           </div>
 
           <div className="space-y-2">
@@ -319,7 +355,7 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
           ) : (
             <Save className="w-4 h-4" />
           )}
-          {isSubmitting ? "Salvando..." : "Salvar Exame"}
+          {uploadingText ? uploadingText : isSubmitting ? "Salvando..." : "Salvar Exame"}
         </Button>
       </div>
     </form>
