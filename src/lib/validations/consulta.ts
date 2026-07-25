@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const consultaSchema = z.object({
   familiar_id: z.string().min(1, "Selecione o familiar"),
-  medico_id: z.string().min(1, "Selecione o médico"),
+  medico_id: z.string().nullable().transform((val) => val === "none" ? null : val || null),
   data_consulta: z
     .string()
     .min(1, "A data e hora são obrigatórias")
@@ -12,6 +12,7 @@ export const consultaSchema = z.object({
   motivo: z.string().nullable().transform((val) => val || null),
   diagnostico: z.string().nullable().transform((val) => val || null),
   prescricao: z.string().nullable().transform((val) => val || null),
+  local_atendimento: z.string().nullable().transform((val) => val || null),
 });
 
 export type ConsultaSchemaType = z.infer<typeof consultaSchema>;

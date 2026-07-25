@@ -66,8 +66,9 @@ export default async function ConsultasPage({
     list = list.filter(
       (c) =>
         c.motivo?.toLowerCase().includes(termo) ||
-        c.familiares?.nome.toLowerCase().includes(termo) ||
-        c.medicos?.nome.toLowerCase().includes(termo)
+        c.familiares?.nome?.toLowerCase().includes(termo) ||
+        c.medicos?.nome?.toLowerCase().includes(termo) ||
+        c.local_atendimento?.toLowerCase().includes(termo)
     );
   }
 
@@ -175,7 +176,13 @@ export default async function ConsultasPage({
                         
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Stethoscope className="w-4 h-4 shrink-0 text-blue-500" />
-                          <span className="truncate">Dr(a). {consulta.medicos?.nome || "Médico"}</span>
+                          <span className="truncate">
+                            {consulta.medicos?.nome
+                              ? `Dr(a). ${consulta.medicos.nome}`
+                              : consulta.local_atendimento
+                              ? consulta.local_atendimento
+                              : "Não informado"}
+                          </span>
                         </div>
                       </div>
 

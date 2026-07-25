@@ -29,7 +29,7 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
   // Buscar os exames do familiar, ordenados de forma decrescente
   const { data: exames, error: examesError } = await supabase
     .from("exames")
-    .select("*")
+    .select("*, medicos(nome)")
     .eq("familiar_id", familiarId)
     .order("data_exame", { ascending: false });
 

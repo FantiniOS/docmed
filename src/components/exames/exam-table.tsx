@@ -34,6 +34,7 @@ export function ExamTable({ exames }: ExamTableProps) {
           <TableRow className="hover:bg-transparent">
             <TableHead>Exame</TableHead>
             <TableHead>Tipo</TableHead>
+            <TableHead>Médico/Local</TableHead>
             <TableHead>Data</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -49,6 +50,15 @@ export function ExamTable({ exames }: ExamTableProps) {
                   </span>
                 ) : (
                   "-"
+                )}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {exame.medicos?.nome ? (
+                  `Dr(a). ${exame.medicos.nome}`
+                ) : exame.local_atendimento ? (
+                  exame.local_atendimento
+                ) : (
+                  "Não informado"
                 )}
               </TableCell>
               <TableCell>

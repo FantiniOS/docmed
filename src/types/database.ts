@@ -44,6 +44,7 @@ export interface Consulta {
   motivo: string | null;
   diagnostico: string | null;
   prescricao: string | null;
+  local_atendimento: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -61,6 +62,7 @@ export interface Exame {
   data_exame: string; // ISO date string
   arquivo_url: string | null; // URL do Supabase Storage
   observacoes: string | null;
+  local_atendimento: string | null;
   created_at?: string;
   updated_at?: string;
 }

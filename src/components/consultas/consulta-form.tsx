@@ -53,10 +53,10 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
     defaultValues: initialData || {
       familiar_id: "",
       medico_id: "",
-      data_consulta: "",
       motivo: null,
       diagnostico: null,
       prescricao: null,
+      local_atendimento: null,
     },
   });
 
@@ -149,31 +149,26 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
             <div className="space-y-2">
               <Label className="flex items-center gap-1">
                 <Stethoscope className="w-3.5 h-3.5" />
-                Médico <span className="text-destructive">*</span>
+                Médico Solicitante (Opcional)
               </Label>
               <Controller
                 control={control}
                 name="medico_id"
                 render={({ field }) => (
                   <div>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value ?? ""} onValueChange={(val) => field.onChange(val || null)}>
                       <SelectTrigger className="w-full" aria-invalid={!!errors.medico_id}>
                         <SelectValue placeholder="Selecione o médico">
-                          {field.value ? "Dr(a). " + medicos.find((m) => m.id === field.value)?.nome : undefined}
+                          {field.value && field.value !== "none" ? "Dr(a). " + medicos.find((m) => m.id === field.value)?.nome : "Nenhum / Não Cadastrado"}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {medicos.length === 0 ? (
-                          <div className="p-2 text-sm text-muted-foreground text-center">
-                            Nenhum médico cadastrado
-                          </div>
-                        ) : (
-                          medicos.map((med) => (
-                            <SelectItem key={med.id} value={med.id}>
-                              Dr(a). {med.nome}
-                            </SelectItem>
-                          ))
-                        )}
+                        <SelectItem value="none">Nenhum / Não Cadastrado</SelectItem>
+                        {medicos.map((med) => (
+                          <SelectItem key={med.id} value={med.id}>
+                            Dr(a). {med.nome}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     {errors.medico_id && (
@@ -184,6 +179,21 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
                   </div>
                 )}
               />
+            </div>
+            
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="local_atendimento">
+                Local de Atendimento / Médico Avulso (Opcional)
+              </Label>
+              <Input
+                id="local_atendimento"
+                placeholder="Ex: Hospital Mater Dei, UPA, ou Dr. João (Plantão)"
+                aria-invalid={!!errors.local_atendimento}
+                {...register("local_atendimento")}
+              />
+              {errors.local_atendimento && (
+                <p className="text-xs text-destructive">{errors.local_atendimento.message}</p>
+              )}
             </div>
           </div>
         </CardContent>

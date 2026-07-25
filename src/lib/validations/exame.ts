@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const exameSchema = z.object({
   familiar_id: z.string().min(1, "Selecione o familiar"),
-  medico_id: z.string().nullable().transform((val) => val || null),
+  medico_id: z.string().nullable().transform((val) => val === "none" ? null : val || null),
   nome_exame: z
     .string()
     .min(2, "O nome do exame deve ter pelo menos 2 caracteres")
@@ -16,6 +16,7 @@ export const exameSchema = z.object({
     }),
   arquivo_url: z.string().url("A URL do arquivo é inválida").nullable().transform((val) => val || null).or(z.literal("").transform(() => null)),
   observacoes: z.string().nullable().transform((val) => val || null),
+  local_atendimento: z.string().nullable().transform((val) => val || null),
 });
 
 export type ExameSchemaType = z.infer<typeof exameSchema>;

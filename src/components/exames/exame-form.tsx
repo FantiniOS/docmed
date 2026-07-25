@@ -65,6 +65,7 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
       data_exame: "",
       arquivo_url: null,
       observacoes: null,
+      local_atendimento: null,
     },
   });
 
@@ -193,7 +194,7 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
             <div className="space-y-2">
               <Label className="flex items-center gap-1">
                 <Stethoscope className="w-3.5 h-3.5" />
-                Médico Solicitante
+                Médico Solicitante (Opcional)
               </Label>
               <Controller
                 control={control}
@@ -204,26 +205,37 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
                     onValueChange={(val) => field.onChange(val || null)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Opcional...">
-                        {field.value ? "Dr(a). " + medicos.find((m) => m.id === field.value)?.nome : undefined}
+                      <SelectValue placeholder="Selecione o médico...">
+                        {field.value && field.value !== "none" ? "Dr(a). " + medicos.find((m) => m.id === field.value)?.nome : "Nenhum / Não Cadastrado"}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {medicos.length === 0 ? (
-                        <div className="p-2 text-sm text-muted-foreground text-center">
-                          Nenhum médico cadastrado
-                        </div>
-                      ) : (
-                        medicos.map((med) => (
-                          <SelectItem key={med.id} value={med.id}>
-                            Dr(a). {med.nome}
-                          </SelectItem>
-                        ))
-                      )}
+                      <SelectItem value="none">Nenhum / Não Cadastrado</SelectItem>
+                      {medicos.map((med) => (
+                        <SelectItem key={med.id} value={med.id}>
+                          Dr(a). {med.nome}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
               />
+            </div>
+            
+            {/* Local de Atendimento */}
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="local_atendimento">
+                Local de Atendimento / Médico Avulso (Opcional)
+              </Label>
+              <Input
+                id="local_atendimento"
+                placeholder="Ex: Hospital Mater Dei, UPA, ou Dr. João (Plantão)"
+                aria-invalid={!!errors.local_atendimento}
+                {...register("local_atendimento")}
+              />
+              {errors.local_atendimento && (
+                <p className="text-xs text-destructive">{errors.local_atendimento.message}</p>
+              )}
             </div>
           </div>
         </CardContent>
