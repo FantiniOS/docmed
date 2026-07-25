@@ -1,40 +1,23 @@
 import Link from "next/link";
-import { FileText, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { FileText, Plus, User } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 export default async function ExamesPage() {
   const supabase = await createServerSupabaseClient();
 
-  // Query no Supabase fazendo JOIN com a tabela de familiares
-  const { data: exames, error } = await supabase
-    .from("exames")
-    .select("*, familiares(nome)")
-    .order("data_exame", { ascending: false });
+  // Buscar todos os familiares, e contar quantos exames cada um possui
+  // Utilizamos exames(id) para que o Supabase retorne um array de ids de exames para cada familiar
+  const { data: familiares, error } = await supabase
+    .from("familiares")
+    .select("id, nome, exames(id)")
+    .order("nome", { ascending: true });
 
   if (error) {
-    console.error("Erro ao buscar exames:", error);
+    console.error("Erro ao buscar familiares com exames:", error);
   }
 
-  // Agrupar exames por Familiar
-  const examesAgrupados = exames?.reduce((acc, exame) => {
-    const familiar = exame.familiares?.nome || "Desconhecido";
-    if (!acc[familiar]) {
-      acc[familiar] = [];
-    }
-    acc[familiar].push(exame);
-    return acc;
-  }, {} as Record<string, typeof exames>);
+  // Filtramos os familiares que possuem pelo menos 1 exame
+  const familiaresComExames = familiares?.filter((fam) => fam.exames && fam.exames.length > 0) || [];
 
   return (
     <div className="animate-fade-in-up space-y-6">
@@ -52,7 +35,7 @@ export default async function ExamesPage() {
         </Link>
       </div>
 
-      {!exames || exames.length === 0 ? (
+      {familiaresComExames.length === 0 ? (
         <div className="rounded-md border bg-card p-12 flex flex-col items-center justify-center text-center gap-3">
           <FileText className="w-10 h-10 text-muted-foreground/50" />
           <p className="text-muted-foreground font-medium">
@@ -67,107 +50,27 @@ export default async function ExamesPage() {
           </Link>
         </div>
       ) : (
-        <Tabs defaultValue={Object.keys(examesAgrupados || {})[0]} className="w-full space-y-6">
-          <div className="overflow-x-auto pb-1">
-            <TabsList className="inline-flex w-max min-w-full justify-start h-auto p-1 bg-muted/50 rounded-lg">
-              {Object.keys(examesAgrupados || {}).map((familiar) => (
-                <TabsTrigger
-                  key={familiar}
-                  value={familiar}
-                  className="px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-md"
-                >
-                  {familiar}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
-
-          {(Object.entries(examesAgrupados || {}) as [string, any[]][]).map(([familiar, listaExames]) => (
-            <TabsContent key={familiar} value={familiar} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-              <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
-                <div className="bg-muted/30 px-5 py-4 border-b flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                      <span className="text-emerald-500 font-semibold text-sm">
-                        {familiar.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-base text-foreground">{familiar}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {familiaresComExames.map((familiar) => (
+            <Link key={familiar.id} href={`/exames/familiar/${familiar.id}`}>
+              <div className="rounded-xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all cursor-pointer group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+                    <User className="w-6 h-6 text-emerald-500" />
                   </div>
-                  <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
-                    {listaExames.length} {listaExames.length === 1 ? 'exame' : 'exames'}
-                  </span>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead>Exame</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead className="text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {listaExames.map((exame) => (
-                        <TableRow key={exame.id}>
-                          <TableCell className="font-medium">{exame.nome_exame}</TableCell>
-                          <TableCell>
-                            {exame.tipo_exame ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
-                                {exame.tipo_exame}
-                              </span>
-                            ) : (
-                              "-"
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(exame.data_exame), "dd/MM/yyyy", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1 sm:gap-2">
-                              {exame.arquivo_url ? (
-                                <a
-                                  href={exame.arquivo_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-2 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
-                                  title="Visualizar Arquivo"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </a>
-                              ) : (
-                                <div className="p-2 text-muted-foreground/20" title="Sem arquivo">
-                                  <Eye className="w-4 h-4" />
-                                </div>
-                              )}
-                              
-                              <Link
-                                href={`/exames/${exame.id}/editar`}
-                                className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
-                                title="Editar"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Link>
-                              
-                              <button
-                                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                                title="Excluir"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-lg text-foreground truncate" title={familiar.nome}>
+                      {familiar.nome}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {familiar.exames.length} {familiar.exames.length === 1 ? 'exame cadastrado' : 'exames cadastrados'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </TabsContent>
+            </Link>
           ))}
-        </Tabs>
+        </div>
       )}
     </div>
   );
