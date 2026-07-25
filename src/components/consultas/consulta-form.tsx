@@ -124,7 +124,9 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
                   <div>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full" aria-invalid={!!errors.familiar_id}>
-                        <SelectValue placeholder="Selecione o familiar" />
+                        <SelectValue placeholder="Selecione o familiar">
+                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {familiares.map((fam) => (
@@ -156,7 +158,9 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
                   <div>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full" aria-invalid={!!errors.medico_id}>
-                        <SelectValue placeholder="Selecione o médico" />
+                        <SelectValue placeholder="Selecione o médico">
+                          {field.value ? "Dr(a). " + medicos.find((m) => m.id === field.value)?.nome : undefined}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {medicos.length === 0 ? (
