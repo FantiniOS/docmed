@@ -1,6 +1,7 @@
 import { CalendarCheck, Clock, User, Stethoscope } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import type { ConsultaComRelacionamentos } from "@/types/database";
 
 interface UpcomingConsultationsProps {
@@ -75,12 +76,13 @@ export function UpcomingConsultations({
               const urgente = dias <= 2;
 
               return (
-                <div
+                <Link
                   key={consulta.id}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-accent/30 transition-all duration-200 hover:bg-accent/50"
+                  href={`/consultas/${consulta.id}/editar`}
+                  className="flex items-start gap-3 p-3 rounded-xl bg-accent/30 transition-all duration-200 hover:bg-accent/50 group"
                 >
                   {/* Data badge */}
-                  <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 shrink-0">
+                  <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 shrink-0 group-hover:bg-blue-500/20 transition-colors">
                     <span className="text-xs font-bold text-blue-500 leading-none">
                       {data.split(" ")[0]}
                     </span>
@@ -92,7 +94,7 @@ export function UpcomingConsultations({
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-foreground truncate">
+                      <span className="text-sm font-medium text-foreground truncate group-hover:text-blue-500 transition-colors">
                         {consulta.motivo || "Consulta médica"}
                       </span>
                       {urgente && (
@@ -129,7 +131,7 @@ export function UpcomingConsultations({
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

@@ -70,19 +70,20 @@ export function RecentExams({ exames }: RecentExamsProps) {
         ) : (
           <div className="grid gap-2">
             {exames.map((exame) => (
-              <div
+              <Link
                 key={exame.id}
+                href={`/exames/${exame.id}/editar`}
                 className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-accent/50 group"
               >
                 {/* Icon */}
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10 shrink-0">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10 shrink-0 group-hover:bg-amber-500/20 transition-colors">
                   <FileText className="w-4 h-4 text-amber-500" />
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground truncate">
+                    <span className="text-sm font-medium text-foreground truncate group-hover:text-amber-500 transition-colors">
                       {exame.nome_exame}
                     </span>
                     {exame.tipo_exame && (
@@ -109,20 +110,22 @@ export function RecentExams({ exames }: RecentExamsProps) {
                   </div>
                 </div>
 
-                {/* View action */}
+                {/* View action - Evitar a âncora dentro da âncora usando objeto ou mudando a rota pelo NextRouter, mas como Link aninhado dá erro de hidratação, 
+                mudamos o elemento para uma div que captura o click e abre em nova aba. */}
                 {exame.arquivo_url && (
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <a 
-                      href={exame.arquivo_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                    <div 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(exame.arquivo_url!, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                    </a>
+                    </div>
                   </div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         )}
