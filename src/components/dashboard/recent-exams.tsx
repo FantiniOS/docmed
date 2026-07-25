@@ -33,6 +33,15 @@ function getTipoExameStyle(tipo: string | null): string {
   return "bg-violet-500/10 text-violet-400";
 }
 
+/**
+ * Retorna o primeiro e o último nome (ex: Maria Silva)
+ */
+function formatarNome(nome: string): string {
+  const partes = nome.trim().split(" ");
+  if (partes.length === 1) return partes[0];
+  return `${partes[0]} ${partes[partes.length - 1]}`;
+}
+
 export function RecentExams({ exames }: RecentExamsProps) {
   return (
     <Card>
@@ -90,7 +99,7 @@ export function RecentExams({ exames }: RecentExamsProps) {
                     {exame.familiares && (
                       <span className="flex items-center gap-1">
                         <User className="w-3 h-3" />
-                        {exame.familiares.nome.split(" ")[0]}
+                        {formatarNome(exame.familiares.nome)}
                       </span>
                     )}
                     <span className="flex items-center gap-1">
