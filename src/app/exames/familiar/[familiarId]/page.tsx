@@ -1,3 +1,4 @@
+// Atualizado com a seção de relatórios
 import Link from "next/link";
 import { ArrowLeft, FileText, Plus } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
