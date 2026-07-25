@@ -14,6 +14,15 @@ export const consultaSchema = z.object({
   prescricao: z.string().nullable().transform((val) => val || null),
   local_atendimento: z.string().nullable().transform((val) => val || null),
   especialidade: z.string().nullable().transform((val) => val || null),
+  tipo_consulta: z.string().nullable().transform((val) => val || null),
 });
 
 export type ConsultaSchemaType = z.infer<typeof consultaSchema>;
+
+export const tiposConsulta = [
+  "Primeira Consulta",
+  "Retorno",
+  "Check-up de Rotina",
+  "Emergência / Pronto-Socorro",
+  "Outro",
+] as const;

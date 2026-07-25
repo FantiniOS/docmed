@@ -23,10 +23,9 @@ export type ExameSchemaType = z.infer<typeof exameSchema>;
 
 export const tiposExames = [
   "Exame de Sangue",
-  "Exame de Urina",
-  "Ressonância Magnética",
-  "Tomografia",
-  "Raio-X",
-  "Ultrassom",
-  "Outros",
+  "Exame de Imagem (Raio-X, Tomografia, etc)",
+  "Urina / Fezes",
+  "Avaliação Cardiológica",
+  "Exame Genético",
+  "Outro",
 ] as const;

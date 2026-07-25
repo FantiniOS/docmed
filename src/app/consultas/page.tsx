@@ -156,9 +156,16 @@ export default async function ConsultasPage({
                     {/* Informações Section */}
                     <div className="p-4 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-base font-semibold text-foreground group-hover:text-blue-500 transition-colors">
-                          {consulta.motivo || "Consulta de Rotina"}
-                        </h3>
+                        <div>
+                          <h3 className="text-base font-semibold text-foreground group-hover:text-blue-500 transition-colors">
+                            {consulta.motivo || "Consulta de Rotina"}
+                          </h3>
+                          {consulta.tipo_consulta && (
+                            <Badge variant="outline" className="mt-1 text-xs font-normal">
+                              {consulta.tipo_consulta}
+                            </Badge>
+                          )}
+                        </div>
                         <Link
                           href={`/consultas/${consulta.id}/editar`}
                           className="text-muted-foreground hover:text-blue-500 transition-colors shrink-0 p-1"

@@ -46,6 +46,7 @@ export interface Consulta {
   prescricao: string | null;
   local_atendimento: string | null;
   especialidade: string | null;
+  tipo_consulta: string | null;
   created_at?: string;
   updated_at?: string;
 }

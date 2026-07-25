@@ -29,7 +29,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
-import { consultaSchema, type ConsultaSchemaType } from "@/lib/validations/consulta";
+import { consultaSchema, type ConsultaSchemaType, tiposConsulta } from "@/lib/validations/consulta";
 import { especialidades } from "@/lib/validations/medico";
 import type { Familiar, Medico } from "@/types/database";
 
@@ -59,6 +59,7 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
       prescricao: null,
       local_atendimento: null,
       especialidade: null,
+      tipo_consulta: null,
     },
   });
 
@@ -233,7 +234,7 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
             Agendamento & Detalhes
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="grid sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="data_consulta">
               Data e Hora <span className="text-destructive">*</span>
@@ -252,10 +253,35 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="motivo">Motivo da Consulta</Label>
+            <Label>Tipo de Consulta</Label>
+            <Controller
+              control={control}
+              name="tipo_consulta"
+              render={({ field }) => (
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={(val) => field.onChange(val || null)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tiposConsulta.map((tipo) => (
+                      <SelectItem key={tipo} value={tipo}>
+                        {tipo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="motivo">Motivo da Consulta (Detalhes opcionais)</Label>
             <Input
               id="motivo"
-              placeholder="Ex: Retorno, Check-up anual, Dor de cabeça constante..."
+              placeholder="Ex: Dores de cabeça constantes, tosse persistente..."
               {...register("motivo")}
             />
           </div>
