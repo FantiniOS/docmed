@@ -103,9 +103,14 @@ export function RecentExams({ exames }: RecentExamsProps) {
                 {/* View action */}
                 {exame.arquivo_url && (
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                    <a 
+                      href={exame.arquivo_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
                       <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                    </Button>
+                    </a>
                   </div>
                 )}
               </div>
