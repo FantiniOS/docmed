@@ -68,6 +68,23 @@ export interface Exame {
   updated_at?: string;
 }
 
+/**
+ * Registro de relatório médico (laudo, atestado, receita).
+ * Pode incluir arquivo anexado via Supabase Storage.
+ */
+export interface Relatorio {
+  id: string;
+  familiar_id: string;
+  medico_id: string | null;
+  titulo: string;
+  data_relatorio: string; // ISO date string
+  arquivo_url: string | null; // URL do Supabase Storage
+  observacoes: string | null;
+  local_atendimento: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // =============================================================================
 // Tipos com relacionamentos (JOINs)
 // =============================================================================
@@ -84,6 +101,12 @@ export interface ExameComRelacionamentos extends Exame {
   medicos?: Medico;
 }
 
+/** Relatório com dados expandidos do familiar e do médico */
+export interface RelatorioComRelacionamentos extends Relatorio {
+  familiares?: Familiar;
+  medicos?: Medico;
+}
+
 // =============================================================================
 // Tipos para formulários (omitindo campos automáticos)
 // =============================================================================
@@ -92,6 +115,7 @@ export type FamiliarFormData = Omit<Familiar, "id" | "created_at" | "updated_at"
 export type MedicoFormData = Omit<Medico, "id" | "created_at" | "updated_at">;
 export type ConsultaFormData = Omit<Consulta, "id" | "created_at" | "updated_at">;
 export type ExameFormData = Omit<Exame, "id" | "created_at" | "updated_at">;
+export type RelatorioFormData = Omit<Relatorio, "id" | "created_at" | "updated_at">;
 
 // =============================================================================
 // Tipos para métricas do Dashboard

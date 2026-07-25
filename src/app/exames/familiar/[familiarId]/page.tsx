@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, FileText, Plus } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { ExamTable } from "@/components/exames/exam-table";
+import { RelatorioTable } from "@/components/relatorios/relatorio-table";
 import { notFound } from "next/navigation";
 
 interface ExamesFamiliarPageProps {
@@ -37,6 +38,17 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
     console.error("Erro ao buscar exames do familiar:", examesError);
   }
 
+  // Buscar os relatórios do familiar
+  const { data: relatorios, error: relatoriosError } = await supabase
+    .from("relatorios")
+    .select("*, medicos(nome)")
+    .eq("familiar_id", familiarId)
+    .order("data_relatorio", { ascending: false });
+
+  if (relatoriosError) {
+    console.error("Erro ao buscar relatórios do familiar:", relatoriosError);
+  }
+
   return (
     <div className="animate-fade-in-up space-y-6">
       <Link
@@ -63,6 +75,24 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
 
       <div className="pt-2">
         <ExamTable exames={exames || []} />
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
+        <div className="flex items-center gap-3">
+          <FileText className="w-6 h-6 text-emerald-500" />
+          <h2 className="text-xl font-bold tracking-tight">Relatórios Médicos</h2>
+        </div>
+        <Link
+          href={`/relatorios/novo?familiarId=${familiarId}`}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-md text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Novo Relatório
+        </Link>
+      </div>
+
+      <div className="pt-2">
+        <RelatorioTable relatorios={relatorios || []} />
       </div>
     </div>
   );
