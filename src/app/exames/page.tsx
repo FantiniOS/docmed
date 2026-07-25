@@ -25,6 +25,16 @@ export default async function ExamesPage() {
     console.error("Erro ao buscar exames:", error);
   }
 
+  // Agrupar exames por Familiar
+  const examesAgrupados = exames?.reduce((acc, exame) => {
+    const familiar = exame.familiares?.nome || "Desconhecido";
+    if (!acc[familiar]) {
+      acc[familiar] = [];
+    }
+    acc[familiar].push(exame);
+    return acc;
+  }, {} as Record<string, typeof exames>);
+
   return (
     <div className="animate-fade-in-up space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -41,73 +51,96 @@ export default async function ExamesPage() {
         </Link>
       </div>
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Exame</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Paciente</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {!exames || exames.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  Nenhum exame cadastrado.
-                </TableCell>
-              </TableRow>
-            ) : (
-              exames.map((exame) => (
-                <TableRow key={exame.id}>
-                  <TableCell className="font-medium">{exame.nome_exame}</TableCell>
-                  <TableCell>{exame.tipo_exame || "-"}</TableCell>
-                  <TableCell>
-                    {format(new Date(exame.data_exame), "dd/MM/yyyy", { locale: ptBR })}
-                  </TableCell>
-                  <TableCell>{exame.familiares?.nome || "Desconhecido"}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {exame.arquivo_url ? (
-                        <a
-                          href={exame.arquivo_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-muted-foreground hover:text-emerald-500 transition-colors"
-                          title="Visualizar Arquivo"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </a>
-                      ) : (
-                        <div className="p-2 text-muted-foreground/30" title="Sem arquivo">
-                          <Eye className="w-4 h-4" />
-                        </div>
-                      )}
-                      
-                      <Link
-                        href={`/exames/${exame.id}/editar`}
-                        className="p-2 text-muted-foreground hover:text-blue-500 transition-colors"
-                        title="Editar"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      
-                      <button
-                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                        title="Excluir"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {!exames || exames.length === 0 ? (
+        <div className="rounded-md border bg-card p-12 flex flex-col items-center justify-center text-center gap-3">
+          <FileText className="w-10 h-10 text-muted-foreground/50" />
+          <p className="text-muted-foreground font-medium">Nenhum exame cadastrado.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {(Object.entries(examesAgrupados || {}) as [string, any[]][]).map(([familiar, listaExames]) => (
+            <div key={familiar} className="rounded-xl border bg-card overflow-hidden shadow-sm">
+              <div className="bg-muted/30 px-5 py-4 border-b flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <span className="text-emerald-500 font-semibold text-sm">
+                    {familiar.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-base text-foreground">{familiar}</h3>
+                <span className="ml-auto bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                  {listaExames.length} {listaExames.length === 1 ? 'exame' : 'exames'}
+                </span>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead>Exame</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {listaExames.map((exame) => (
+                      <TableRow key={exame.id}>
+                        <TableCell className="font-medium">{exame.nome_exame}</TableCell>
+                        <TableCell>
+                          {exame.tipo_exame ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
+                              {exame.tipo_exame}
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(exame.data_exame), "dd/MM/yyyy", { locale: ptBR })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1 sm:gap-2">
+                            {exame.arquivo_url ? (
+                              <a
+                                href={exame.arquivo_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
+                                title="Visualizar Arquivo"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </a>
+                            ) : (
+                              <div className="p-2 text-muted-foreground/20" title="Sem arquivo">
+                                <Eye className="w-4 h-4" />
+                              </div>
+                            )}
+                            
+                            <Link
+                              href={`/exames/${exame.id}/editar`}
+                              className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
+                              title="Editar"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Link>
+                            
+                            <button
+                              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                              title="Excluir"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
