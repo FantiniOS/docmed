@@ -37,12 +37,12 @@ function diasRestantes(dataString: string): number {
 }
 
 /**
- * Retorna o primeiro e o último nome (ex: Maria Silva)
+ * Retorna o primeiro e o segundo nome (ex: Maria Clara)
  */
 function formatarNome(nome: string): string {
   const partes = nome.trim().split(" ");
   if (partes.length === 1) return partes[0];
-  return `${partes[0]} ${partes[partes.length - 1]}`;
+  return `${partes[0]} ${partes[1]}`;
 }
 
 export function UpcomingConsultations({
