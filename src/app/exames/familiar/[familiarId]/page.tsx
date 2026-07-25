@@ -27,27 +27,25 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
     notFound();
   }
 
-  // Buscar os exames do familiar, ordenados de forma decrescente
-  const { data: exames, error: examesError } = await supabase
-    .from("exames")
-    .select("*, medicos(nome)")
-    .eq("familiar_id", familiarId)
-    .order("data_exame", { ascending: false });
+  // Buscar os exames e relatórios do familiar em paralelo
+  const [examesResponse, relatoriosResponse] = await Promise.all([
+    supabase
+      .from("exames")
+      .select("*, medicos(nome)")
+      .eq("familiar_id", familiarId)
+      .order("data_exame", { ascending: false }),
+    supabase
+      .from("relatorios")
+      .select("*, medicos(nome)")
+      .eq("familiar_id", familiarId)
+      .order("data_relatorio", { ascending: false })
+  ]);
 
-  if (examesError) {
-    console.error("Erro ao buscar exames do familiar:", examesError);
-  }
+  const { data: exames, error: examesError } = examesResponse;
+  const { data: relatorios, error: relatoriosError } = relatoriosResponse;
 
-  // Buscar os relatórios do familiar
-  const { data: relatorios, error: relatoriosError } = await supabase
-    .from("relatorios")
-    .select("*, medicos(nome)")
-    .eq("familiar_id", familiarId)
-    .order("data_relatorio", { ascending: false });
-
-  if (relatoriosError) {
-    console.error("Erro ao buscar relatórios do familiar:", relatoriosError);
-  }
+  if (examesError) console.error("Erro ao buscar exames do familiar:", examesError);
+  if (relatoriosError) console.error("Erro ao buscar relatórios do familiar:", relatoriosError);
 
   return (
     <div className="animate-fade-in-up space-y-6">
@@ -62,7 +60,7 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <FileText className="w-6 h-6 text-emerald-500" />
-          <h1 className="text-2xl font-bold tracking-tight">Exames de {familiar.nome}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Documentos de {familiar.nome}</h1>
         </div>
         <Link
           href={`/exames/novo`} // Idealmente poderia preencher o ID do familiar, mas na rota genérica basta
@@ -73,14 +71,18 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
         </Link>
       </div>
 
+      <div className="mt-8 border-b pb-2">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Exames e Resultados</h2>
+      </div>
+
       <div className="pt-2">
         <ExamTable exames={exames || []} />
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
         <div className="flex items-center gap-3">
-          <FileText className="w-6 h-6 text-emerald-500" />
-          <h2 className="text-xl font-bold tracking-tight">Relatórios Médicos</h2>
+          <FileText className="w-6 h-6 text-emerald-500 hidden sm:block" />
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Relatórios e Laudos</h2>
         </div>
         <Link
           href={`/relatorios/novo?familiarId=${familiarId}`}
