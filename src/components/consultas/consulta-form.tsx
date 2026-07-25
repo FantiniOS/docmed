@@ -30,6 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import { consultaSchema, type ConsultaSchemaType } from "@/lib/validations/consulta";
+import { especialidades } from "@/lib/validations/medico";
 import type { Familiar, Medico } from "@/types/database";
 
 interface ConsultaFormProps {
@@ -57,6 +58,7 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
       diagnostico: null,
       prescricao: null,
       local_atendimento: null,
+      especialidade: null,
     },
   });
 
@@ -177,6 +179,31 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
                       </p>
                     )}
                   </div>
+                )}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Especialidade</Label>
+              <Controller
+                control={control}
+                name="especialidade"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(val) => field.onChange(val || null)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione a especialidade..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {especialidades.map((esp) => (
+                        <SelectItem key={esp} value={esp}>
+                          {esp}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               />
             </div>
