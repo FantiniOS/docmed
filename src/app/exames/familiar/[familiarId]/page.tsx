@@ -5,13 +5,13 @@ import { ExamTable } from "@/components/exames/exam-table";
 import { notFound } from "next/navigation";
 
 interface ExamesFamiliarPageProps {
-  params: {
+  params: Promise<{
     familiarId: string;
-  };
+  }>;
 }
 
 export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageProps) {
-  const { familiarId } = params;
+  const { familiarId } = await params;
   const supabase = await createServerSupabaseClient();
 
   // Buscar os detalhes do familiar
