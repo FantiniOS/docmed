@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileHeader } from "@/components/layout/mobile-header";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f1117",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -42,24 +43,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} dark`}>
-      <body className="min-h-dvh bg-background text-foreground antialiased">
-        <TooltipProvider>
-          {/* Desktop Sidebar */}
-          <Sidebar />
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={`${inter.variable} min-h-dvh bg-background text-foreground antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
+        >
+          <TooltipProvider>
+            {/* Desktop Sidebar */}
+            <Sidebar />
 
-          {/* Mobile Header (Hamburger Menu) */}
-          <MobileHeader />
+            {/* Mobile Header (Hamburger Menu) */}
+            <MobileHeader />
 
-          {/* Main Content — offset by sidebar width on desktop */}
-          <main className="lg:pl-64 min-h-dvh">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-              {children}
-            </div>
-          </main>
+            {/* Main Content — offset by sidebar width on desktop */}
+            <main className="lg:pl-64 min-h-dvh">
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+                {children}
+              </div>
+            </main>
 
-          <Toaster />
-        </TooltipProvider>
+            <Toaster />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
