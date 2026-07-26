@@ -63,7 +63,7 @@ export default async function FamiliaresPage({
   const list = familiares as Familiar[] || [];
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-4 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -90,7 +90,7 @@ export default async function FamiliaresPage({
             name="q"
             defaultValue={q}
             placeholder="Buscar por nome..."
-            className="pl-9 h-11"
+            className="pl-9 h-9"
           />
         </form>
       </div>
@@ -120,15 +120,15 @@ export default async function FamiliaresPage({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {list.map((familiar, index) => (
             <Link key={familiar.id} href={`/familiares/${familiar.id}`}>
               <Card className="group transition-all duration-200 hover:shadow-md hover:border-emerald-500/30">
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex items-start gap-3">
-                    <Avatar className={`w-12 h-12 shadow-md bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
+                    <Avatar className={`w-9 h-9 shadow-sm bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
                       <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
-                      <AvatarFallback className="bg-transparent text-white text-base font-semibold">
+                      <AvatarFallback className="bg-transparent text-white text-sm font-semibold">
                         {getIniciais(familiar.nome)}
                       </AvatarFallback>
                     </Avatar>

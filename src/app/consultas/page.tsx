@@ -74,7 +74,7 @@ export default async function ConsultasPage({
   }
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-4 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -101,7 +101,7 @@ export default async function ConsultasPage({
             name="q"
             defaultValue={q}
             placeholder="Buscar por familiar, médico ou motivo..."
-            className="pl-9 h-11"
+            className="pl-9 h-9"
           />
         </form>
       </div>
@@ -133,7 +133,7 @@ export default async function ConsultasPage({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-2">
           {list.map((consulta) => {
             const { data, hora } = formatarData(consulta.data_consulta);
             
@@ -142,7 +142,7 @@ export default async function ConsultasPage({
                 <CardContent className="p-0">
                   <div className="flex flex-col sm:flex-row">
                     {/* Data/Hora Section (Esquerda no desktop) */}
-                    <div className="bg-muted/30 p-4 sm:w-40 flex sm:flex-col items-center sm:items-start justify-between sm:justify-center border-b sm:border-b-0 sm:border-r border-border shrink-0">
+                    <div className="bg-muted/30 p-3 sm:w-36 flex sm:flex-col items-center sm:items-start justify-between sm:justify-center border-b sm:border-b-0 sm:border-r border-border shrink-0">
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold text-foreground" suppressHydrationWarning>{data}</span>
                         <span className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5" suppressHydrationWarning>
@@ -155,10 +155,10 @@ export default async function ConsultasPage({
                     </div>
 
                     {/* Informações Section */}
-                    <div className="p-4 flex-1">
+                    <div className="p-3 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h3 className="text-base font-semibold text-foreground group-hover:text-blue-500 transition-colors">
+                          <h3 className="text-sm font-semibold text-foreground group-hover:text-blue-500 transition-colors">
                             {consulta.motivo || "Consulta de Rotina"}
                           </h3>
                           {consulta.tipo_consulta && (
@@ -176,7 +176,7 @@ export default async function ConsultasPage({
                         </Link>
                       </div>
                       
-                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                      <div className="grid sm:grid-cols-2 gap-2 mt-2">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           {consulta.familiares?.foto_url ? (
                             <Avatar className="w-5 h-5 border border-border">
@@ -209,7 +209,7 @@ export default async function ConsultasPage({
                       </div>
 
                       {(consulta.diagnostico || consulta.prescricao) && (
-                        <div className="mt-4 pt-3 border-t border-border grid sm:grid-cols-2 gap-3">
+                        <div className="mt-3 pt-2 border-t border-border grid sm:grid-cols-2 gap-2">
                           {consulta.diagnostico && (
                             <div>
                               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Diagnóstico</span>

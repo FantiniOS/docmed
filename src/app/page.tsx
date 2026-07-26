@@ -93,7 +93,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in-up min-w-0">
+    <div className="space-y-4 animate-fade-in-up min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         <MetricCard
           title="Familiares"
           value={data.familiares.length}
@@ -137,14 +137,14 @@ export default async function DashboardPage() {
       </div>
 
       {/* Content Grid — 2 colunas no desktop */}
-      <div className="grid lg:grid-cols-5 gap-4 sm:gap-6">
+      <div className="grid lg:grid-cols-5 gap-3 sm:gap-4">
         {/* Acesso Rápido — ocupa 2 colunas */}
         <div className="lg:col-span-2">
           <QuickAccess familiares={data.familiares} />
         </div>
 
         {/* Próximas Consultas + Últimos Exames — ocupa 3 colunas */}
-        <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+        <div className="lg:col-span-3 space-y-3 sm:space-y-4">
           <UpcomingConsultations consultas={data.proximasConsultas} />
           <RecentExams exames={data.ultimosExames} />
         </div>

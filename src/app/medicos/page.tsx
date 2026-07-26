@@ -35,7 +35,7 @@ export default async function MedicosPage({
   const list = medicos as Medico[] || [];
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-4 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -62,7 +62,7 @@ export default async function MedicosPage({
             name="q"
             defaultValue={q}
             placeholder="Buscar por nome do médico..."
-            className="pl-9 h-11"
+            className="pl-9 h-9"
           />
         </form>
       </div>
@@ -94,14 +94,14 @@ export default async function MedicosPage({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {list.map((medico) => (
             <Card key={medico.id} className="group transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
-              <CardContent className="p-4 space-y-4">
+              <CardContent className="p-3 space-y-2.5">
                 <div className="flex items-start gap-3">
-                  <Avatar className="w-12 h-12 rounded-xl shrink-0">
+                  <Avatar className="w-9 h-9 rounded-lg shrink-0">
                     <AvatarImage src={medico.foto_url || undefined} alt={medico.nome} className="object-cover" />
-                    <AvatarFallback className="bg-blue-500/10 text-blue-500 text-base font-semibold rounded-xl">
+                    <AvatarFallback className="bg-blue-500/10 text-blue-500 text-sm font-semibold rounded-lg">
                       {getIniciais(medico.nome)}
                     </AvatarFallback>
                   </Avatar>
@@ -124,7 +124,7 @@ export default async function MedicosPage({
                   </div>
                 </div>
 
-                <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="space-y-1 text-xs text-muted-foreground">
                   {medico.telefone && (
                     <div className="flex items-center gap-2">
                       <Phone className="w-3.5 h-3.5 shrink-0" />

@@ -20,7 +20,7 @@ export default async function ExamesPage() {
   const familiaresComExames = familiares?.filter((fam) => fam.exames && fam.exames.length > 0) || [];
 
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <FileText className="w-6 h-6 text-emerald-500" />
@@ -36,7 +36,7 @@ export default async function ExamesPage() {
       </div>
 
       {familiaresComExames.length === 0 ? (
-        <div className="rounded-md border bg-card p-12 flex flex-col items-center justify-center text-center gap-3">
+        <div className="rounded-md border bg-card p-8 flex flex-col items-center justify-center text-center gap-2">
           <FileText className="w-10 h-10 text-muted-foreground/50" />
           <p className="text-muted-foreground font-medium">
             Nenhum exame cadastrado. Adicione o primeiro exame da sua família.
@@ -50,13 +50,13 @@ export default async function ExamesPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {familiaresComExames.map((familiar) => (
             <Link key={familiar.id} href={`/exames/familiar/${familiar.id}`}>
-              <div className="rounded-xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all cursor-pointer group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-                    <User className="w-6 h-6 text-emerald-500" />
+              <div className="rounded-xl border bg-card p-4 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all cursor-pointer group">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+                    <User className="w-4.5 h-4.5 text-emerald-500" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-lg text-foreground truncate" title={familiar.nome}>

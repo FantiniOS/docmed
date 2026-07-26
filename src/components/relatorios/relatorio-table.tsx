@@ -21,7 +21,7 @@ interface RelatorioTableProps {
 export function RelatorioTable({ relatorios }: RelatorioTableProps) {
   if (!relatorios || relatorios.length === 0) {
     return (
-      <div className="p-8 text-center text-muted-foreground border rounded-lg bg-card/50">
+      <div className="p-4 text-center text-muted-foreground border rounded-lg bg-card/50">
         Nenhum relatório médico ou laudo cadastrado.
       </div>
     );

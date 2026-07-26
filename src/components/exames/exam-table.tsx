@@ -21,7 +21,7 @@ interface ExamTableProps {
 export function ExamTable({ exames }: ExamTableProps) {
   if (!exames || exames.length === 0) {
     return (
-      <div className="p-8 text-center text-muted-foreground border rounded-lg bg-card/50">
+      <div className="p-4 text-center text-muted-foreground border rounded-lg bg-card/50">
         Nenhum exame cadastrado para este familiar.
       </div>
     );
@@ -71,27 +71,27 @@ export function ExamTable({ exames }: ExamTableProps) {
                       href={exame.arquivo_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
+                      className="p-1.5 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 rounded-md transition-colors"
                       title="Visualizar Arquivo"
                     >
                       <Eye className="w-4 h-4" />
                     </a>
                   ) : (
-                    <div className="p-2 text-muted-foreground/20" title="Sem arquivo">
+                    <div className="p-1.5 text-muted-foreground/20" title="Sem arquivo">
                       <Eye className="w-4 h-4" />
                     </div>
                   )}
                   
                   <Link
                     href={`/exames/${exame.id}/editar`}
-                    className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
+                    className="p-1.5 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
                     title="Editar"
                   >
                     <Edit className="w-4 h-4" />
                   </Link>
                   
                   <button
-                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                     title="Excluir"
                   >
                     <Trash2 className="w-4 h-4" />

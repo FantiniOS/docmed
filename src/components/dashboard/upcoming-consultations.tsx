@@ -70,7 +70,7 @@ export function UpcomingConsultations({
             </p>
           </div>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             {consultas.map((consulta) => {
               const { data, hora } = formatarData(consulta.data_consulta);
               const dias = diasRestantes(consulta.data_consulta);
@@ -80,10 +80,10 @@ export function UpcomingConsultations({
                 <Link
                   key={consulta.id}
                   href={`/consultas/${consulta.id}/editar`}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-accent/30 transition-all duration-200 hover:bg-accent/50 group"
+                  className="flex items-start gap-2.5 p-2 rounded-lg bg-accent/30 transition-all duration-200 hover:bg-accent/50 group"
                 >
                   {/* Data badge */}
-                  <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 shrink-0 group-hover:bg-blue-500/20 transition-colors">
+                  <div className="flex flex-col items-center justify-center w-10 h-10 rounded-md bg-blue-500/10 shrink-0 group-hover:bg-blue-500/20 transition-colors">
                     <span className="text-xs font-bold text-blue-500 leading-none" suppressHydrationWarning>
                       {data.split(" ")[0]}
                     </span>

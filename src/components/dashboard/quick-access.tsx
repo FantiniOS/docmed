@@ -94,10 +94,10 @@ export function QuickAccess({ familiares }: QuickAccessProps) {
               <Link
                 key={familiar.id}
                 href={`/familiares/${familiar.id}`}
-                className="group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-accent/50"
+                className="group flex items-center gap-2.5 p-2 rounded-lg transition-all duration-200 hover:bg-accent/50"
               >
                 {/* Avatar com iniciais */}
-                <Avatar className={`w-10 h-10 shadow-md shrink-0 bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
+                <Avatar className={`w-8 h-8 shadow-sm shrink-0 bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
                   <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
                   <AvatarFallback className="bg-transparent text-white text-sm font-semibold">
                     {getIniciais(familiar.nome)}

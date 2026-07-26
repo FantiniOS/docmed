@@ -71,15 +71,15 @@ export function RecentExams({ exames }: RecentExamsProps) {
             </p>
           </div>
         ) : (
-          <div className="grid gap-2">
+          <div className="grid gap-1.5">
             {exames.map((exame) => (
               <Link
                 key={exame.id}
                 href={`/exames/${exame.id}/editar`}
-                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-accent/50 group"
+                className="flex items-center gap-2.5 p-2 rounded-lg transition-all duration-200 hover:bg-accent/50 group"
               >
                 {/* Icon */}
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10 shrink-0 group-hover:bg-amber-500/20 transition-colors">
+                <div className="flex items-center justify-center w-7 h-7 rounded-md bg-amber-500/10 shrink-0 group-hover:bg-amber-500/20 transition-colors">
                   <FileText className="w-4 h-4 text-amber-500" />
                 </div>
 

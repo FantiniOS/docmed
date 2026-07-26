@@ -75,7 +75,7 @@ export function MetricCard({
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               {title}
             </span>
-            <span className="text-3xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground">
               {value}
             </span>
             {description && (
@@ -96,7 +96,7 @@ export function MetricCard({
           </div>
           <div
             className={cn(
-              "flex items-center justify-center w-11 h-11 rounded-xl",
+              "flex items-center justify-center w-9 h-9 rounded-lg",
               styles.iconBg
             )}
           >

@@ -49,7 +49,7 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
   if (relatoriosError) console.error("Erro ao buscar relatórios do familiar:", relatoriosError);
 
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up space-y-4">
       <Link
         href="/exames"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -72,7 +72,7 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
         </Link>
       </div>
 
-      <div className="mt-8 border-b pb-2">
+      <div className="mt-4 border-b pb-1.5">
         <h2 className="text-xl font-bold tracking-tight text-foreground">Exames e Resultados</h2>
       </div>
 
@@ -80,7 +80,7 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
         <ExamTable exames={exames || []} />
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4">
         <div className="flex items-center gap-3">
           <FileText className="w-6 h-6 text-emerald-500 hidden sm:block" />
           <h2 className="text-xl font-bold tracking-tight text-foreground">Relatórios e Laudos</h2>
