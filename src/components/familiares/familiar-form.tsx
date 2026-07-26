@@ -76,9 +76,16 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
 
         const { error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(fileName, file);
+          .upload(fileName, file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type,
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error("Erro no upload do Supabase:", uploadError);
+          throw new Error(`Falha no upload da imagem: ${uploadError.message}`);
+        }
         
         const { data: publicUrlData } = supabase.storage
           .from("avatars")
