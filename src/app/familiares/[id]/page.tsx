@@ -140,7 +140,7 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
             {familiar.nome}
           </h1>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground" suppressHydrationWarning>
               {idade} anos • {formatarData(familiar.data_nascimento)}
             </span>
             {familiar.tipo_sanguineo && (
@@ -281,7 +281,7 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
                   {/* Data visual */}
                   <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-amber-500/10 shrink-0">
                     <Calendar className="w-4 h-4 text-amber-500 mb-0.5" />
-                    <span className="text-[10px] text-amber-400 font-medium">
+                    <span className="text-[10px] text-amber-400 font-medium" suppressHydrationWarning>
                       {new Date(exame.data_exame).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
@@ -369,7 +369,7 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
                   {/* Data visual */}
                   <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-500/10 shrink-0">
                     <Calendar className="w-4 h-4 text-emerald-500 mb-0.5" />
-                    <span className="text-[10px] text-emerald-600 font-medium">
+                    <span className="text-[10px] text-emerald-600 font-medium" suppressHydrationWarning>
                       {new Date(relatorio.data_relatorio).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",

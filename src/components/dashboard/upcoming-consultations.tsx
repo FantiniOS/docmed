@@ -83,10 +83,10 @@ export function UpcomingConsultations({
                 >
                   {/* Data badge */}
                   <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 shrink-0 group-hover:bg-blue-500/20 transition-colors">
-                    <span className="text-xs font-bold text-blue-500 leading-none">
+                    <span className="text-xs font-bold text-blue-500 leading-none" suppressHydrationWarning>
                       {data.split(" ")[0]}
                     </span>
-                    <span className="text-[10px] text-blue-400 uppercase leading-none mt-0.5">
+                    <span className="text-[10px] text-blue-400 uppercase leading-none mt-0.5" suppressHydrationWarning>
                       {data.split(" ")[1]}
                     </span>
                   </div>
@@ -125,7 +125,7 @@ export function UpcomingConsultations({
                           {consulta.medicos ? `Dr. ${consulta.medicos.nome.split(" ")[0]}` : consulta.local_atendimento}
                         </span>
                       )}
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1" suppressHydrationWarning>
                         <Clock className="w-3 h-3" />
                         {hora}
                       </span>

@@ -143,12 +143,12 @@ export default async function ConsultasPage({
                     {/* Data/Hora Section (Esquerda no desktop) */}
                     <div className="bg-muted/30 p-4 sm:w-40 flex sm:flex-col items-center sm:items-start justify-between sm:justify-center border-b sm:border-b-0 sm:border-r border-border shrink-0">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-foreground">{data}</span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                        <span className="text-sm font-semibold text-foreground" suppressHydrationWarning>{data}</span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5" suppressHydrationWarning>
                           <Clock className="w-3 h-3" /> {hora}
                         </span>
                       </div>
-                      <div className="sm:mt-2">
+                      <div className="sm:mt-2" suppressHydrationWarning>
                         {getStatusBadge(consulta.data_consulta)}
                       </div>
                     </div>
