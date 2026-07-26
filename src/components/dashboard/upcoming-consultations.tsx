@@ -127,7 +127,15 @@ export function UpcomingConsultations({
                       })()}
                       
                       {(consulta.medicos || consulta.local_atendimento) && (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
+                          {consulta.medicos?.foto_url && (
+                            <Avatar className="w-4 h-4 border border-border">
+                              <AvatarImage src={consulta.medicos.foto_url} alt={consulta.medicos.nome} className="object-cover" />
+                              <AvatarFallback className="bg-blue-500/10 text-blue-500 text-[8px] font-medium">
+                                {consulta.medicos.nome[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
                           {consulta.medicos ? `Dr. ${consulta.medicos.nome.split(" ")[0]}` : consulta.local_atendimento}
                         </span>
                       )}

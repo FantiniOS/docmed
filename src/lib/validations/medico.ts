@@ -12,6 +12,7 @@ export const medicoSchema = z.object({
   telefone: z.string().nullable().transform((val) => val || null),
   email: z.string().email("E-mail inválido").nullable().transform((val) => val || null).or(z.literal("").transform(() => null)),
   endereco: z.string().nullable().transform((val) => val || null),
+  foto_url: z.string().nullable().optional(),
 });
 
 export type MedicoSchemaType = z.infer<typeof medicoSchema>;

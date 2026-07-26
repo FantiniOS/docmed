@@ -4,7 +4,18 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Medico } from "@/types/database";
+
+function getIniciais(nome: string): string {
+  return nome
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export default async function MedicosPage({
   searchParams,
@@ -88,9 +99,12 @@ export default async function MedicosPage({
             <Card key={medico.id} className="group transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
               <CardContent className="p-4 space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 shrink-0">
-                    <Stethoscope className="w-6 h-6 text-blue-500" />
-                  </div>
+                  <Avatar className="w-12 h-12 rounded-xl shrink-0">
+                    <AvatarImage src={medico.foto_url || undefined} alt={medico.nome} className="object-cover" />
+                    <AvatarFallback className="bg-blue-500/10 text-blue-500 text-base font-semibold rounded-xl">
+                      {getIniciais(medico.nome)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-sm font-semibold truncate text-foreground group-hover:text-blue-500 transition-colors">

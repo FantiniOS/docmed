@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ConsultaComRelacionamentos } from "@/types/database";
 
 function formatarData(dataString: string): { data: string; hora: string } {
@@ -177,12 +178,26 @@ export default async function ConsultasPage({
                       
                       <div className="grid sm:grid-cols-2 gap-3 mt-3">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <User className="w-4 h-4 shrink-0 text-emerald-500" />
+                          {consulta.familiares?.foto_url ? (
+                            <Avatar className="w-5 h-5 border border-border">
+                              <AvatarImage src={consulta.familiares.foto_url} alt="Familiar" className="object-cover" />
+                              <AvatarFallback className="text-[10px] bg-emerald-500/10 text-emerald-500">{consulta.familiares.nome[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                          ) : (
+                            <User className="w-4 h-4 shrink-0 text-emerald-500" />
+                          )}
                           <span className="truncate">{consulta.familiares?.nome || "Familiar"}</span>
                         </div>
                         
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Stethoscope className="w-4 h-4 shrink-0 text-blue-500" />
+                          {consulta.medicos?.foto_url ? (
+                            <Avatar className="w-5 h-5 border border-border">
+                              <AvatarImage src={consulta.medicos.foto_url} alt="Médico" className="object-cover" />
+                              <AvatarFallback className="text-[10px] bg-blue-500/10 text-blue-500">{consulta.medicos.nome[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                          ) : (
+                            <Stethoscope className="w-4 h-4 shrink-0 text-blue-500" />
+                          )}
                           <span className="truncate">
                             {consulta.medicos?.nome
                               ? `Dr(a). ${consulta.medicos.nome}`

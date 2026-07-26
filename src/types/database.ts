@@ -29,6 +29,7 @@ export interface Medico {
   telefone: string | null;
   email: string | null;
   endereco: string | null;
+  foto_url?: string | null;
   created_at?: string;
   updated_at?: string;
 }

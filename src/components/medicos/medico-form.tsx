@@ -13,7 +13,9 @@ import {
   Phone,
   Mail,
   MapPin,
+  Camera,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +40,8 @@ export function MedicoForm({ initialData }: { initialData?: MedicoSchemaType & {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.foto_url || null);
 
   const {
     register,
@@ -52,6 +56,7 @@ export function MedicoForm({ initialData }: { initialData?: MedicoSchemaType & {
       telefone: null,
       email: null,
       endereco: null,
+      foto_url: null,
     },
   });
 
@@ -60,12 +65,40 @@ export function MedicoForm({ initialData }: { initialData?: MedicoSchemaType & {
     setSubmitError(null);
 
     try {
+      let fotoUrl = initialData?.foto_url || null;
+
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `medico_${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type,
+          });
+
+        if (uploadError) {
+          console.error("Erro no upload do Supabase:", uploadError);
+          throw new Error(`Falha no upload da foto: ${uploadError.message}`);
+        }
+        
+        const { data: publicUrlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(fileName);
+          
+        fotoUrl = publicUrlData.publicUrl;
+      }
+      
+      const payload = { ...data, foto_url: fotoUrl };
+
       if (initialData?.id) {
-        const { error } = await supabase.from("medicos").update(data).eq("id", initialData.id);
+        const { error } = await supabase.from("medicos").update(payload).eq("id", initialData.id);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Médico atualizado.", type: "success" });
       } else {
-        const { error } = await supabase.from("medicos").insert([data]);
+        const { error } = await supabase.from("medicos").insert([payload]);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Médico cadastrado.", type: "success" });
       }
@@ -106,7 +139,39 @@ export function MedicoForm({ initialData }: { initialData?: MedicoSchemaType & {
             Dados Básicos
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Foto de Perfil */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 pb-2">
+            <Avatar className="w-24 h-24 shadow-sm border border-border">
+              <AvatarImage src={previewUrl || undefined} alt="Avatar Médico" className="object-cover" />
+              <AvatarFallback className="bg-blue-500/10 text-blue-500 text-xl font-medium">
+                <Camera className="w-8 h-8 opacity-50" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-2 text-center sm:text-left flex-1">
+              <Label htmlFor="foto" className="cursor-pointer inline-flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                <Camera className="w-4 h-4" />
+                Escolher foto
+              </Label>
+              <Input 
+                id="foto" 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={(e) => {
+                  const selectedFile = e.target.files?.[0];
+                  if (selectedFile) {
+                    setFile(selectedFile);
+                    setPreviewUrl(URL.createObjectURL(selectedFile));
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                JPG, PNG ou GIF. Tamanho máximo de 5MB.
+              </p>
+            </div>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nome">
