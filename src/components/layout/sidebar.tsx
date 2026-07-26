@@ -30,7 +30,7 @@ export function Sidebar() {
       <div className="flex items-center justify-center px-6 h-20 border-b border-border">
         <Link href="/">
           <img 
-            src="/logo.png" 
+            src="/logo.svg" 
             alt="DocMed Logo" 
             className="h-12 w-auto object-contain"
           />

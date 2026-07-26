@@ -64,7 +64,7 @@ export default function LoginPage() {
         {/* Logo/Branding */}
         <div className="flex justify-center mb-8">
           <img 
-            src="/logo.png" 
+            src="/logo.svg" 
             alt="DocMed Logo" 
             className="h-16 w-auto object-contain"
           />

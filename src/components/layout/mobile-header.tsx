@@ -25,7 +25,7 @@ export function MobileHeader() {
       <div className="flex items-center gap-2">
         <Link href="/">
           <img 
-            src="/logo.png" 
+            src="/logo.svg" 
             alt="DocMed Logo" 
             className="h-8 w-auto object-contain"
           />
@@ -41,7 +41,7 @@ export function MobileHeader() {
           <SheetHeader className="p-6 text-left border-b border-border">
             <SheetTitle className="flex items-center gap-2 border-b border-border pb-4">
               <img 
-                src="/logo.png" 
+                src="/logo.svg" 
                 alt="DocMed Logo" 
                 className="h-8 w-auto object-contain"
               />
