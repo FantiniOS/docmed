@@ -59,7 +59,7 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
       alergias: null,
       doencas_cronicas: null,
       medicamentos_uso_continuo: null,
-      foto_url: initialData?.foto_url || null,
+      foto_url: null,
     },
   });
 
