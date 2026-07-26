@@ -3,6 +3,7 @@ import { User, Droplets, AlertTriangle, ChevronRight, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Familiar } from "@/types/database";
 
 interface QuickAccessProps {
@@ -96,13 +97,12 @@ export function QuickAccess({ familiares }: QuickAccessProps) {
                 className="group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-accent/50"
               >
                 {/* Avatar com iniciais */}
-                <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${
-                    avatarColors[index % avatarColors.length]
-                  } text-white text-sm font-semibold shrink-0 shadow-md`}
-                >
-                  {getIniciais(familiar.nome)}
-                </div>
+                <Avatar className={`w-10 h-10 shadow-md shrink-0 bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
+                  <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
+                  <AvatarFallback className="bg-transparent text-white text-sm font-semibold">
+                    {getIniciais(familiar.nome)}
+                  </AvatarFallback>
+                </Avatar>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
