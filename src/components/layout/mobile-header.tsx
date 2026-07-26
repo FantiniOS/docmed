@@ -23,12 +23,13 @@ export function MobileHeader() {
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-card/80 px-4 backdrop-blur-xl lg:hidden">
       <div className="flex items-center gap-2">
-        <Link href="/">
-          <img 
-            src="/logo.svg" 
-            alt="DocMed Logo" 
-            className="h-8 w-auto object-contain"
-          />
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-sm">
+            <Heart className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-lg font-bold tracking-tight text-foreground">
+            DOCMED
+          </span>
         </Link>
       </div>
 
@@ -39,12 +40,11 @@ export function MobileHeader() {
         </SheetTrigger>
         <SheetContent side="right" className="flex flex-col p-0 border-l border-border bg-card w-[280px]">
           <SheetHeader className="p-6 text-left border-b border-border">
-            <SheetTitle className="flex items-center gap-2 border-b border-border pb-4">
-              <img 
-                src="/logo.svg" 
-                alt="DocMed Logo" 
-                className="h-8 w-auto object-contain"
-              />
+            <SheetTitle className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
+                <Heart className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold">DOCMED</span>
             </SheetTitle>
           </SheetHeader>
           <nav className="flex-1 overflow-y-auto p-4 space-y-1">

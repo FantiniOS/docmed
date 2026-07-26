@@ -61,13 +61,20 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-muted/40">
       <div className="w-full max-w-md animate-fade-in-up">
-        {/* Logo/Branding */}
         <div className="flex justify-center mb-8">
-          <img 
-            src="/logo.svg" 
-            alt="DocMed Logo" 
-            className="h-16 w-auto object-contain"
-          />
+          <div className="flex items-center gap-2">
+            <div className="bg-emerald-500 p-2 rounded-xl text-white shadow-lg shadow-emerald-500/20">
+              <Stethoscope className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-1">
+                DOCMED <HeartPulse className="w-5 h-5 text-rose-500" />
+              </h1>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
+                Prontuário Familiar
+              </p>
+            </div>
+          </div>
         </div>
 
         <Card className="border-border shadow-lg">

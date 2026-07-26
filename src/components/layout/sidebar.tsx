@@ -27,13 +27,19 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-50 border-r border-border bg-card">
       {/* Logo / Branding */}
-      <div className="flex items-center justify-center px-6 h-20 border-b border-border">
-        <Link href="/">
-          <img 
-            src="/logo.svg" 
-            alt="DocMed Logo" 
-            className="h-12 w-auto object-contain"
-          />
+      <div className="flex items-center gap-3 px-6 h-16 border-b border-border">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
+            <Heart className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-base font-bold tracking-tight text-foreground">
+              DOCMED
+            </span>
+            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              Prontuário Familiar
+            </span>
+          </div>
         </Link>
       </div>
 
