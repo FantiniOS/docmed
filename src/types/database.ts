@@ -14,6 +14,7 @@ export interface Familiar {
   alergias: string | null;
   doencas_cronicas: string | null;
   medicamentos_uso_continuo: string | null;
+  foto_url?: string | null;
   created_at?: string;
   updated_at?: string;
 }

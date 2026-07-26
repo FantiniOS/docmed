@@ -14,7 +14,9 @@ import {
   Save,
   Loader2,
   ArrowLeft,
+  Camera,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,8 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.foto_url || null);
 
   const {
     register,
@@ -55,6 +59,7 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
       alergias: null,
       doencas_cronicas: null,
       medicamentos_uso_continuo: null,
+      foto_url: initialData?.foto_url || null,
     },
   });
 
@@ -63,12 +68,33 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
     setSubmitError(null);
 
     try {
+      let fotoUrl = initialData?.foto_url || null;
+
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+        
+        const { data: publicUrlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(fileName);
+          
+        fotoUrl = publicUrlData.publicUrl;
+      }
+      
+      const payload = { ...data, foto_url: fotoUrl };
+
       if (initialData?.id) {
-        const { error } = await supabase.from("familiares").update(data).eq("id", initialData.id);
+        const { error } = await supabase.from("familiares").update(payload).eq("id", initialData.id);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Familiar atualizado.", type: "success" });
       } else {
-        const { error } = await supabase.from("familiares").insert([data]);
+        const { error } = await supabase.from("familiares").insert([payload]);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Familiar cadastrado.", type: "success" });
       }
@@ -112,7 +138,39 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
             Dados Pessoais
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Foto de Perfil */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 pb-2">
+            <Avatar className="w-24 h-24 shadow-sm border border-border">
+              <AvatarImage src={previewUrl || undefined} alt="Avatar" className="object-cover" />
+              <AvatarFallback className="bg-emerald-500/10 text-emerald-500 text-xl font-medium">
+                <Camera className="w-8 h-8 opacity-50" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-2 text-center sm:text-left flex-1">
+              <Label htmlFor="foto" className="cursor-pointer inline-flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                <Camera className="w-4 h-4" />
+                Escolher foto
+              </Label>
+              <Input 
+                id="foto" 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={(e) => {
+                  const selectedFile = e.target.files?.[0];
+                  if (selectedFile) {
+                    setFile(selectedFile);
+                    setPreviewUrl(URL.createObjectURL(selectedFile));
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                JPG, PNG ou GIF. Tamanho máximo de 5MB.
+              </p>
+            </div>
+          </div>
+
           {/* Nome */}
           <div className="space-y-2">
             <Label htmlFor="nome">

@@ -31,6 +31,7 @@ export const familiarSchema = z.object({
     .string()
     .nullable()
     .transform((val) => val || null),
+  foto_url: z.string().nullable().optional(),
 });
 
 export type FamiliarSchemaType = z.infer<typeof familiarSchema>;

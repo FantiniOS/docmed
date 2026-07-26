@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Familiar } from "@/types/database";
 
 /**
@@ -125,13 +126,12 @@ export default async function FamiliaresPage({
               <Card className="group transition-all duration-200 hover:shadow-md hover:border-emerald-500/30">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div
-                      className={`flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br ${
-                        avatarColors[index % avatarColors.length]
-                      } text-white text-base font-semibold shrink-0 shadow-md`}
-                    >
-                      {getIniciais(familiar.nome)}
-                    </div>
+                    <Avatar className={`w-12 h-12 shadow-md bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
+                      <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
+                      <AvatarFallback className="bg-transparent text-white text-base font-semibold">
+                        {getIniciais(familiar.nome)}
+                      </AvatarFallback>
+                    </Avatar>
 
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold truncate text-foreground group-hover:text-emerald-500 transition-colors">

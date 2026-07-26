@@ -16,6 +16,7 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
 interface FamiliarPageProps {
@@ -127,14 +128,18 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
 
       {/* Cabeçalho do Perfil */}
       <div className="flex items-start gap-4">
-        <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xl font-bold shadow-lg shadow-emerald-500/20 shrink-0">
-          {familiar.nome
-            .split(" ")
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join("")
-            .toUpperCase()}
-        </div>
+        <Avatar className="w-16 h-16 rounded-2xl shadow-lg shadow-emerald-500/20 shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600">
+          <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
+          <AvatarFallback className="bg-transparent text-white text-xl font-bold rounded-2xl">
+            {familiar.nome
+              .split(" ")
+              .filter(Boolean)
+              .map((n) => n[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold tracking-tight truncate">
             {familiar.nome}
