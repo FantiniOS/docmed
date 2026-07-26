@@ -1,6 +1,7 @@
 import { CalendarCheck, Clock, User, Stethoscope } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import type { ConsultaComRelacionamentos } from "@/types/database";
 
@@ -105,8 +106,13 @@ export function UpcomingConsultations({
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       {consulta.familiares && (
-                        <span className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
+                        <span className="flex items-center gap-1.5">
+                          <Avatar className="w-4 h-4 border border-border">
+                            <AvatarImage src={consulta.familiares.foto_url || undefined} alt={consulta.familiares.nome} className="object-cover" />
+                            <AvatarFallback className="bg-emerald-500/10 text-emerald-500 text-[8px] font-medium">
+                              {consulta.familiares.nome[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
                           {formatarNome(consulta.familiares.nome)}
                         </span>
                       )}
