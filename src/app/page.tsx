@@ -93,7 +93,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in-up min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">

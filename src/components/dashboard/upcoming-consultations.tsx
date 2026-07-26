@@ -104,7 +104,7 @@ export function UpcomingConsultations({
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground flex-wrap">
                       {consulta.familiares && (
                         <span className="flex items-center gap-1.5">
                           <Avatar className="w-4 h-4 border border-border">

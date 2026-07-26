@@ -99,7 +99,7 @@ export function RecentExams({ exames }: RecentExamsProps) {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-x-3 gap-y-1 mt-0.5 text-xs text-muted-foreground flex-wrap">
                     {exame.familiares && (
                       <span className="flex items-center gap-1.5">
                         <Avatar className="w-4 h-4 border border-border">
