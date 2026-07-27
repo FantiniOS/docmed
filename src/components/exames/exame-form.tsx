@@ -14,6 +14,7 @@ import {
   Stethoscope,
   Link as LinkIcon,
   Upload,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -50,10 +51,13 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
   const [file, setFile] = useState<File | null>(null);
   const [uploadingText, setUploadingText] = useState("");
 
+  const [isExtracting, setIsExtracting] = useState(false);
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<ExameSchemaType>({
     resolver: zodResolver(exameSchema),
@@ -121,6 +125,41 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
     }
   }
 
+  async function handleAIExtract(e: React.ChangeEvent<HTMLInputElement>) {
+    const aiFile = e.target.files?.[0];
+    if (!aiFile) return;
+
+    setIsExtracting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", aiFile);
+
+      const res = await fetch("/api/extract-exam", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Falha ao extrair dados do exame");
+      }
+
+      const data = await res.json();
+      
+      if (data.nome_exame) setValue("nome_exame", data.nome_exame);
+      if (data.tipo_exame) setValue("tipo_exame", data.tipo_exame);
+      if (data.data_exame) setValue("data_exame", data.data_exame);
+      if (data.observacoes) setValue("observacoes", data.observacoes);
+
+      toast.add({ title: "Sucesso!", description: "Dados extraídos com sucesso pela IA.", type: "success" });
+    } catch (err: any) {
+      toast.add({ title: "Erro", description: err.message, type: "error" });
+    } finally {
+      setIsExtracting(false);
+      // reset input value so the same file can be uploaded again if needed
+      e.target.value = "";
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Link
@@ -131,14 +170,39 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
         Voltar para Exames
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <FileText className="w-6 h-6 text-emerald-500" />
-          {initialData ? "Editar Exame" : "Adicionar Exame"}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Registre os resultados de exames da sua família.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <FileText className="w-6 h-6 text-emerald-500" />
+            {initialData ? "Editar Exame" : "Adicionar Exame"}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Registre os resultados de exames da sua família.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Input
+            type="file"
+            accept=".pdf,image/*"
+            className="hidden"
+            id="ai-upload"
+            onChange={handleAIExtract}
+          />
+          <Label
+            htmlFor="ai-upload"
+            className={`inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-sm font-medium cursor-pointer transition-colors ${
+              isExtracting ? "opacity-50 pointer-events-none" : ""
+            }`}
+          >
+            {isExtracting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {isExtracting ? "Analisando..." : "Preencher com IA"}
+          </Label>
+        </div>
       </div>
 
       <Card>
