@@ -38,7 +38,10 @@ export function ResumoClinicoBotao({
         body: JSON.stringify({ paciente, exames, evolucao }),
       });
 
-      if (!res.ok) throw new Error("Erro ao gerar resumo clínico.");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.details || errData?.error || "Erro ao gerar resumo clínico.");
+      }
 
       const data = await res.json();
       setResumo(data.summary);
