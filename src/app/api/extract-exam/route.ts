@@ -46,7 +46,7 @@ export async function POST(req: Request) {
             } : {
               type: 'file',
               data: buffer,
-              mimeType: file.type,
+              mediaType: file.type,
             }
           ]
         }
