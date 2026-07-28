@@ -39,7 +39,7 @@ ${JSON.stringify(evolucao, null, 2)}
 `;
 
     const { text } = await generateText({
-      model: google('gemini-1.5-pro'),
+      model: google('gemini-3.5-flash'),
       system: 'Você é um médico triador experiente. Leia os dados do paciente e crie um resumo executivo claro, técnico, mas objetivo. Destaque alertas graves no topo. Agrupe as tendências de saúde com base na evolução clínica. Limite a resposta a 3 parágrafos.',
       prompt: promptContext,
     });
