@@ -21,7 +21,7 @@ export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
   };
 
   return (
-    <div className={cn("relative flex flex-col items-center justify-center w-full p-4 bg-muted/30 rounded-2xl border", className)}>
+    <div className={cn("relative flex flex-col items-center justify-center w-full p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl border-slate-200 dark:border-slate-700", className)}>
       <svg 
         viewBox="0 0 200 450" 
         className="w-full max-w-[220px] h-auto drop-shadow-sm"
@@ -73,7 +73,7 @@ export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
       
       {regioesAfetadas.length > 0 && (
         <div className="absolute top-4 right-4 flex justify-center">
-          <div className="bg-white dark:bg-zinc-900 border px-3 py-1.5 rounded-full text-xs font-semibold text-rose-500 flex items-center gap-2 shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full text-xs font-semibold text-rose-500 flex items-center gap-2 shadow-sm">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
@@ -85,7 +85,7 @@ export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
 
       {regioesAfetadas.length === 0 && (
         <div className="absolute top-4 right-4 flex justify-center">
-          <div className="bg-white dark:bg-zinc-900 border px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground flex items-center gap-2 shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 shadow-sm">
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             Sem alertas
           </div>
