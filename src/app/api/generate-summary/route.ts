@@ -40,7 +40,7 @@ ${JSON.stringify(evolucao, null, 2)}
 `;
 
     const { object } = await generateObject({
-      model: google('gemini-3.5-flash'),
+      model: google('gemini-2.5-flash'),
       schema: z.object({
         summary: z.string().describe('Resumo executivo claro, técnico, mas objetivo. Destaque alertas graves no topo. Agrupe as tendências de saúde com base na evolução clínica. Limite a resposta a 3 parágrafos. Use formatação markdown para destacar alertas e seções.'),
         regioes_afetadas: z.array(z.enum([

@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const isImage = file.type.startsWith('image/');
 
     const result = await generateObject({
-      model: google('gemini-3.5-flash'),
+      model: google('gemini-2.5-flash'),
       schema: z.object({
         nome_exame: z.string().describe("Nome principal do exame, ex: Hemograma Completo, Ultrassom Abdominal"),
         tipo_exame: z.enum([
