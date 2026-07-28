@@ -44,9 +44,12 @@ ${JSON.stringify(evolucao, null, 2)}
       schema: z.object({
         summary: z.string().describe('Resumo executivo claro, técnico, mas objetivo. Destaque alertas graves no topo. Agrupe as tendências de saúde com base na evolução clínica. Limite a resposta a 3 parágrafos. Use formatação markdown para destacar alertas e seções.'),
         regioes_afetadas: z.array(z.enum([
-          'cabeca', 'peito', 'abdomen', 'braco_esquerdo', 'braco_direito', 
-          'perna_esquerda', 'perna_direita', 'joelho_esquerdo', 'joelho_direito', 'costas'
-        ])).describe('Lista de regiões do corpo afetadas com base nas queixas ou problemas de saúde descritos na evolução clínica ou exames. Mapeie problemas respiratórios para peito, gastrointestinais para abdomen, neurológicos/cefaleia para cabeca. Retorne vazio se nenhum problema físico evidente.')
+          'cranio', 'cervical', 'coluna_toracica', 'coluna_lombar', 
+          'ombro_esquerdo', 'ombro_direito', 'braco_esquerdo', 'braco_direito', 
+          'mao_esquerda', 'mao_direita', 'torax', 'abdomen', 'quadril', 
+          'joelho_esquerdo', 'joelho_direito', 'tornozelo_esquerdo', 'tornozelo_direito', 
+          'pe_esquerdo', 'pe_direito'
+        ])).describe('Lista de regiões do corpo afetadas com base nas queixas ou problemas de saúde descritos na evolução clínica ou exames. Seja extremamente granular e preciso (ex: se o laudo fala de cervical, retorne "cervical" e não o tronco). Mapeie problemas respiratórios/cardíacos para "torax", gastrointestinais para "abdomen", neurológicos/cefaleia para "cranio". Retorne vazio se nenhum problema físico evidente.')
       }),
       system: 'Você é um médico triador experiente. Leia os dados do paciente, crie um resumo executivo e mapeie as regiões do corpo afetadas pelas doenças/queixas atuais.',
       prompt: promptContext,
