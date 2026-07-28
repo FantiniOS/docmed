@@ -119,7 +119,6 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
           Voltar para Familiares
         </Link>
         <div className="flex items-center gap-2">
-          <ResumoClinicoBotao paciente={familiar} exames={exames} evolucao={relatorios} />
           <Link
             href={`/familiares/${familiar.id}/editar`}
             className="inline-flex items-center justify-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 transition-colors bg-blue-500/10 px-3 h-9 rounded-md font-medium"
@@ -263,6 +262,11 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
           </CardContent>
         </Card>
       </div>
+
+      <Separator />
+      
+      {/* Triagem IA e Mapeamento Corporal */}
+      <ResumoClinicoBotao paciente={familiar} exames={exames} evolucao={relatorios} />
 
       <Separator />
 
