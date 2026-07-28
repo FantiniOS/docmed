@@ -73,12 +73,20 @@ export function ResumoClinicoBotao({
 
       const mapElement = document.getElementById("body-map-container");
       if (mapElement) {
+        // Aplica classe temporária para forçar cores HEX puras (desativando oklch/lab)
+        mapElement.classList.add("pdf-safe-colors");
+
         // Usa html2canvas para tirar um "screenshot" da DOM renderizada do BodyMap
         const canvas = await html2canvas(mapElement, { 
           scale: 2, 
-          backgroundColor: null, // Preserva transparência
-          logging: false
+          backgroundColor: "#ffffff", // Força fundo branco hexadecimal explícito
+          logging: false,
+          useCORS: true
         });
+        
+        // Remove a classe temporária para restaurar o visual na tela
+        mapElement.classList.remove("pdf-safe-colors");
+
         const imgData = canvas.toDataURL("image/png");
         
         const yPosTextEnd = 30 + (textLines.length * 6);

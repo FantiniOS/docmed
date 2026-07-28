@@ -201,3 +201,14 @@
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+/* ============================================================
+   PDF Export Print Safe Colors
+   ============================================================ */
+.pdf-safe-colors, .pdf-safe-colors * {
+  color: #000000 !important;
+  border-color: #e5e7eb !important;
+}
+.pdf-safe-colors.bg-white, .pdf-safe-colors .bg-white, .pdf-safe-colors .bg-zinc-900, .pdf-safe-colors .bg-card {
+  background-color: #ffffff !important;
+}
