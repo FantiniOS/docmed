@@ -34,8 +34,7 @@ export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
             <path 
               d="M 60 70 L 140 70 L 135 195 L 65 195 Z" 
               fill="none" 
-              className="stroke-rose-500/50 stroke-[8px] animate-pulse" 
-              style={{ filter: 'blur(6px)' }} 
+              className="stroke-rose-500/30 stroke-[16px] animate-pulse" 
             />
           )}
 

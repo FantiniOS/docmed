@@ -104,6 +104,7 @@ export function ResumoClinicoBotao({
       doc.save(`Resumo_${paciente.nome.replace(/\s+/g, '_')}.pdf`);
       toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
     } catch (error: any) {
+      console.error("Erro ao gerar PDF:", error);
       toast.add({ title: "Erro", description: "Falha ao gerar o PDF.", type: "error" });
     }
   };
