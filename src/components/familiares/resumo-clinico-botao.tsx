@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, Copy, Check } from "lucide-react";
+import { Sparkles, Loader2, Copy, Check, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
+import jsPDF from "jspdf";
 
 interface ResumoClinicoBotaoProps {
   paciente: Familiar;
@@ -62,6 +63,31 @@ export function ResumoClinicoBotao({
     }
   };
 
+  const handleExportPDF = () => {
+    if (!resumo) return;
+    
+    try {
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(`Resumo Clinico - ${paciente.nome}`, 10, 20);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      
+      // Quebra o texto para não ultrapassar a margem (largura da página A4 é ~210mm, margens 10mm de cada lado = 190mm livres)
+      const textLines = doc.splitTextToSize(resumo, 180);
+      doc.text(textLines, 10, 30);
+      
+      const fileName = `Resumo_${paciente.nome.replace(/\s+/g, '_')}.pdf`;
+      doc.save(fileName);
+      
+      toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
+    } catch (error: any) {
+      toast.add({ title: "Erro", description: "Falha ao gerar o PDF.", type: "error" });
+    }
+  };
+
   return (
     <>
       <Button
@@ -93,7 +119,11 @@ export function ResumoClinicoBotao({
             {resumo}
           </div>
           
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end mt-4 gap-2">
+            <Button variant="outline" onClick={handleExportPDF} className="gap-2 text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700">
+              <FileDown className="w-4 h-4" />
+              Exportar PDF
+            </Button>
             <Button variant="outline" onClick={handleCopy} className="gap-2">
               {isCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
               {isCopied ? "Copiado!" : "Copiar"}
