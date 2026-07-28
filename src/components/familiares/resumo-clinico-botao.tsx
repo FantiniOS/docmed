@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "@/components/ui/toast";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { toPng } from 'html-to-image';
 import { BodyMap } from "@/components/paciente/body-map";
 
 interface ResumoClinicoSecaoProps {
@@ -59,31 +59,29 @@ export function ResumoClinicoBotao({
   };
 
   const handleExportPDF = async () => {
-    if (!resumo || !relatorioRef.current) return;
+    const elemento = relatorioRef.current;
+    if (!resumo || !elemento) return;
     try {
-      // Aplica classe temporária para forçar cores HEX puras (desativando oklch/lab)
-      relatorioRef.current.classList.add("pdf-safe-colors");
-
-      const canvas = await html2canvas(relatorioRef.current, { 
-        scale: 2, 
-        backgroundColor: "#ffffff", // Força fundo branco hexadecimal explícito
-        logging: false,
-        useCORS: true
+      // O html-to-image suporta cores lab(), oklch() nativamente
+      const dataUrl = await toPng(elemento, {
+        quality: 1,
+        backgroundColor: '#ffffff',
+        pixelRatio: 2 // Garante a alta resolução no PDF
       });
-      
-      // Remove a classe temporária para restaurar o visual na tela
-      relatorioRef.current.classList.remove("pdf-safe-colors");
 
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF('p', 'mm', 'a4');
+      const larguraPdf = pdf.internal.pageSize.getWidth();
       
-      // Calcula a proporção da imagem para caber na página A4 (largura: 210mm, margens de 10mm)
-      const pdfWidth = 190;
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, "PNG", 10, 10, pdfWidth, pdfHeight);
-      pdf.save(`dossie-clinico-${paciente.nome.replace(/\s+/g, '_')}.pdf`);
-      toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
+      // Carrega a imagem para calcular a proporção corretamente
+      const img = new window.Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        const alturaPdf = (img.height * larguraPdf) / img.width;
+        // Adiciona margem de 10mm no topo
+        pdf.addImage(dataUrl, 'PNG', 0, 10, larguraPdf, alturaPdf);
+        pdf.save(`dossie-clinico-${paciente.nome.replace(/\s+/g, '_')}.pdf`);
+        toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
+      };
     } catch (error: any) {
       console.error("Erro ao gerar PDF:", error);
       toast.add({ title: "Erro", description: "Falha ao gerar o PDF.", type: "error" });
