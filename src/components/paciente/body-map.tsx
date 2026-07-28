@@ -2,93 +2,80 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface BodyMapProps {
   regioesAfetadas: string[];
   className?: string;
 }
 
-const REGION_COORDINATES: Record<string, { cx: number; cy: number; label: string }> = {
-  'cranio': { cx: 100, cy: 35, label: 'Crânio' },
-  'cervical': { cx: 100, cy: 68, label: 'Cervical' },
-  'ombro_direito': { cx: 60, cy: 80, label: 'Ombro Direito' },
-  'ombro_esquerdo': { cx: 140, cy: 80, label: 'Ombro Esquerdo' },
-  'braco_direito': { cx: 32, cy: 140, label: 'Braço Direito' },
-  'braco_esquerdo': { cx: 168, cy: 140, label: 'Braço Esquerdo' },
-  'mao_direita': { cx: 33, cy: 185, label: 'Mão Direita' },
-  'mao_esquerda': { cx: 167, cy: 185, label: 'Mão Esquerda' },
-  'torax': { cx: 100, cy: 105, label: 'Tórax' },
-  'coluna_toracica': { cx: 100, cy: 115, label: 'Coluna Torácica' },
-  'abdomen': { cx: 100, cy: 160, label: 'Abdômen' },
-  'coluna_lombar': { cx: 100, cy: 180, label: 'Coluna Lombar' },
-  'quadril': { cx: 100, cy: 205, label: 'Quadril' },
-  'joelho_direito': { cx: 77, cy: 318, label: 'Joelho Direito' },
-  'joelho_esquerdo': { cx: 123, cy: 318, label: 'Joelho Esquerdo' },
-  'tornozelo_direito': { cx: 72, cy: 415, label: 'Tornozelo Direito' },
-  'tornozelo_esquerdo': { cx: 128, cy: 415, label: 'Tornozelo Esquerdo' },
-  'pe_direito': { cx: 78, cy: 430, label: 'Pé Direito' },
-  'pe_esquerdo': { cx: 122, cy: 430, label: 'Pé Esquerdo' },
+// Transformados de px para porcentagem (relativos a 200x450 original do SVG)
+const REGION_COORDINATES: Record<string, { top: string; left: string; label: string }> = {
+  'cranio': { left: '50%', top: '7.78%', label: 'Crânio' },
+  'cervical': { left: '50%', top: '15.11%', label: 'Cervical' },
+  'ombro_direito': { left: '30%', top: '17.78%', label: 'Ombro Direito' },
+  'ombro_esquerdo': { left: '70%', top: '17.78%', label: 'Ombro Esquerdo' },
+  'braco_direito': { left: '16%', top: '31.11%', label: 'Braço Direito' },
+  'braco_esquerdo': { left: '84%', top: '31.11%', label: 'Braço Esquerdo' },
+  'mao_direita': { left: '16.5%', top: '41.11%', label: 'Mão Direita' },
+  'mao_esquerda': { left: '83.5%', top: '41.11%', label: 'Mão Esquerda' },
+  'torax': { left: '50%', top: '23.33%', label: 'Tórax' },
+  'coluna_toracica': { left: '50%', top: '25.56%', label: 'Coluna Torácica' },
+  'abdomen': { left: '50%', top: '35.56%', label: 'Abdômen' },
+  'coluna_lombar': { left: '50%', top: '40%', label: 'Coluna Lombar' },
+  'quadril': { left: '50%', top: '45.56%', label: 'Quadril' },
+  'joelho_direito': { left: '38.5%', top: '70.67%', label: 'Joelho Direito' },
+  'joelho_esquerdo': { left: '61.5%', top: '70.67%', label: 'Joelho Esquerdo' },
+  'tornozelo_direito': { left: '36%', top: '92.22%', label: 'Tornozelo Direito' },
+  'tornozelo_esquerdo': { left: '64%', top: '92.22%', label: 'Tornozelo Esquerdo' },
+  'pe_direito': { left: '39%', top: '95.56%', label: 'Pé Direito' },
+  'pe_esquerdo': { left: '61%', top: '95.56%', label: 'Pé Esquerdo' },
 };
 
 export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
   return (
     <div className={cn("relative flex flex-col items-center justify-center w-full p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl border-slate-200 dark:border-slate-700", className)}>
-      <svg 
-        width="200"
-        height="450"
-        viewBox="0 0 200 450" 
-        className="max-w-[220px] h-auto drop-shadow-sm"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Camada Base do Corpo Humano */}
-        <g strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="#e2e8f0" stroke="#cbd5e1">
-          {/* Cabeça */}
-          <circle cx="100" cy="40" r="26" />
-          
-          {/* Peito (Upper Torso) */}
-          <path d="M 68 75 Q 100 68 132 75 L 126 130 Q 100 136 74 130 Z" />
-          
-          {/* Abdômen (Lower Torso) */}
-          <path d="M 74 133 Q 100 139 126 133 L 120 190 Q 100 205 80 190 Z" />
-          
-          {/* Braço Esquerdo (paciente direita da imagem) */}
-          <path d="M 64 80 Q 30 85 24 140 Q 20 175 28 195 Q 38 195 38 140 Q 42 100 58 90 Z" />
-          
-          {/* Braço Direito (paciente esquerda da imagem) */}
-          <path d="M 136 80 Q 170 85 176 140 Q 180 175 172 195 Q 162 195 162 140 Q 158 100 142 90 Z" />
-          
-          {/* Perna Esquerda (paciente direita da imagem) */}
-          <path d="M 80 195 L 75 295 Q 73 315 80 325 L 70 425 Q 70 435 85 435 L 90 325 Q 96 305 96 200 Z" />
-          
-          {/* Perna Direita (paciente esquerda da imagem) */}
-          <path d="M 120 195 L 125 295 Q 127 315 120 325 L 130 425 Q 130 435 115 435 L 110 325 Q 104 305 104 200 Z" />
-        </g>
+      
+      {/* Container com aspect ratio exato para suportar posicionamento absoluto (%) */}
+      <div className="relative w-full max-w-[220px] aspect-[200/450] drop-shadow-sm pointer-events-none">
+        
+        {/* Camada Base do Corpo Humano (Estática, imune ao reset do html-to-image) */}
+        {/* Next/Image garante otimização e o componente permanece intacto no snapshot */}
+        <Image 
+          src="/mapa-corpo-base.svg" 
+          alt="Mapa Corporal" 
+          fill
+          priority
+          className="object-contain"
+        />
 
-        {/* Camada de Pinos de Alerta (Granular) */}
+        {/* Camada de Pinos de Alerta (Granular via DIVs Absolutas) */}
         {regioesAfetadas.map((region) => {
           const coord = REGION_COORDINATES[region];
           if (!coord) return null; // Ignora se a região não existir no mapa
           
           return (
-            <g key={region} transform={`translate(${coord.cx}, ${coord.cy})`}>
-              {/* Anel Pulsante Externo */}
-              <circle 
-                r="6" 
-                fill="#f43f5e"
-                className="animate-ping origin-center" 
-                style={{ opacity: 0.75 }}
+            <div 
+              key={region} 
+              className="absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white dark:border-zinc-900 shadow-sm z-10"
+              style={{
+                top: coord.top,
+                left: coord.left,
+                backgroundColor: '#e11d48', // Cor HEX explícita (rose-600)
+              }}
+            >
+              {/* Anel Pulsante (Opcional, apenas visual, some no PDF ou fica congelado dependendo do render) */}
+              <div 
+                className="absolute inset-0 rounded-full animate-ping z-0"
+                style={{
+                  backgroundColor: '#f43f5e', // Cor HEX explícita (rose-500)
+                  opacity: 0.75
+                }}
               />
-              {/* Ponto Sólido Interno */}
-              <circle 
-                r="4" 
-                fill="#e11d48"
-                stroke="#ffffff"
-                strokeWidth="1.5"
-              />
-            </g>
+            </div>
           );
         })}
-      </svg>
+      </div>
       
       {/* Badge Flutuante Informativo */}
       {regioesAfetadas.length > 0 && (
