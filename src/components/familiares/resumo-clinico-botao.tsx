@@ -13,6 +13,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 import jsPDF from "jspdf";
+import { BodyMap } from "@/components/paciente/body-map";
 
 interface ResumoClinicoBotaoProps {
   paciente: Familiar;
@@ -27,6 +28,7 @@ export function ResumoClinicoBotao({
 }: ResumoClinicoBotaoProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [resumo, setResumo] = useState<string | null>(null);
+  const [regioesAfetadas, setRegioesAfetadas] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -46,6 +48,7 @@ export function ResumoClinicoBotao({
 
       const data = await res.json();
       setResumo(data.summary);
+      setRegioesAfetadas(data.regioes_afetadas || []);
       setIsOpen(true);
     } catch (error: any) {
       toast.add({ title: "Erro", description: error.message, type: "error" });
@@ -104,8 +107,8 @@ export function ResumoClinicoBotao({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="flex items-center gap-2 text-emerald-600">
               <Sparkles className="w-5 h-5" />
               Resumo Clínico Gerado por IA
@@ -115,11 +118,27 @@ export function ResumoClinicoBotao({
             </DialogDescription>
           </DialogHeader>
           
-          <div className="mt-4 p-5 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border shadow-sm">
-            {resumo}
+          <div className="flex-1 overflow-y-auto mt-4 pr-1">
+            <div className="grid md:grid-cols-[1fr_260px] gap-6">
+              {/* Left Column: Text Summary */}
+              <div className="flex flex-col gap-4">
+                <div className="p-5 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap leading-relaxed border shadow-sm h-full">
+                  {resumo}
+                </div>
+              </div>
+
+              {/* Right Column: Body Map */}
+              <div className="flex flex-col gap-3">
+                <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-rose-500" />
+                  Mapeamento Corporal
+                </h3>
+                <BodyMap regioesAfetadas={regioesAfetadas} className="h-full min-h-[380px]" />
+              </div>
+            </div>
           </div>
           
-          <div className="flex justify-end mt-4 gap-2">
+          <div className="flex justify-end mt-4 gap-2 pt-4 border-t shrink-0">
             <Button variant="outline" onClick={handleExportPDF} className="gap-2 text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700">
               <FileDown className="w-4 h-4" />
               Exportar PDF

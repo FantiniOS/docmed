@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { z } from 'zod';
 
 export async function GET() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -38,13 +39,20 @@ Evolução Clínica / Consultas:
 ${JSON.stringify(evolucao, null, 2)}
 `;
 
-    const { text } = await generateText({
+    const { object } = await generateObject({
       model: google('gemini-3.5-flash'),
-      system: 'Você é um médico triador experiente. Leia os dados do paciente e crie um resumo executivo claro, técnico, mas objetivo. Destaque alertas graves no topo. Agrupe as tendências de saúde com base na evolução clínica. Limite a resposta a 3 parágrafos.',
+      schema: z.object({
+        summary: z.string().describe('Resumo executivo claro, técnico, mas objetivo. Destaque alertas graves no topo. Agrupe as tendências de saúde com base na evolução clínica. Limite a resposta a 3 parágrafos. Use formatação markdown para destacar alertas e seções.'),
+        regioes_afetadas: z.array(z.enum([
+          'cabeca', 'peito', 'abdomen', 'braco_esquerdo', 'braco_direito', 
+          'perna_esquerda', 'perna_direita', 'joelho_esquerdo', 'joelho_direito', 'costas'
+        ])).describe('Lista de regiões do corpo afetadas com base nas queixas ou problemas de saúde descritos na evolução clínica ou exames. Mapeie problemas respiratórios para peito, gastrointestinais para abdomen, neurológicos/cefaleia para cabeca. Retorne vazio se nenhum problema físico evidente.')
+      }),
+      system: 'Você é um médico triador experiente. Leia os dados do paciente, crie um resumo executivo e mapeie as regiões do corpo afetadas pelas doenças/queixas atuais.',
       prompt: promptContext,
     });
 
-    return NextResponse.json({ summary: text });
+    return NextResponse.json(object);
   } catch (error: any) {
     console.error('Erro ao gerar resumo:', error);
     return NextResponse.json(
