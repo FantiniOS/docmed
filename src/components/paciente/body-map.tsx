@@ -23,51 +23,79 @@ export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
   return (
     <div className={cn("relative flex flex-col items-center justify-center w-full p-4 bg-muted/30 rounded-2xl border", className)}>
       <svg 
-        viewBox="0 0 200 450" 
+        viewBox="0 0 200 480" 
         className="w-full max-w-[220px] h-auto drop-shadow-sm"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <g strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <g strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="translate(100, 20)">
           
           {/* Efeito para as "costas" caso esteja afetado */}
           {isAffected('costas') && (
             <path 
-              d="M 60 70 L 140 70 L 135 195 L 65 195 Z" 
+              d="M -48,150 C -40,110 -55,90 -18,72 C 0,68 18,72 55,90 C 40,110 48,150 48,150 C 44,180 40,210 35,230 C 15,240 -15,240 -35,230 C -40,210 -44,180 -48,150 Z" 
               fill="none" 
-              className="stroke-rose-500/50 stroke-[8px] animate-pulse" 
-              style={{ filter: 'blur(6px)' }} 
+              className="stroke-rose-500/50 stroke-[12px] animate-pulse" 
+              style={{ filter: 'blur(8px)' }} 
             />
           )}
 
-          {/* Cabeça */}
-          <circle id="cabeca" cx="100" cy="40" r="26" className={getRegionClass('cabeca')} />
+          {/* Cabeça e Pescoço */}
+          <path 
+            id="cabeca" 
+            d="M -16,35 C -16,5 -8,-5 0,-5 C 8,-5 16,5 16,35 C 16,50 11,60 18,70 L -18,70 C -11,60 -16,50 -16,35 Z" 
+            className={getRegionClass('cabeca')} 
+          />
           
           {/* Peito (Upper Torso) */}
-          <path id="peito" d="M 68 75 Q 100 68 132 75 L 126 130 Q 100 136 74 130 Z" className={getRegionClass('peito')} />
+          <path 
+            id="peito" 
+            d="M -18,70 L 18,70 C 35,70 50,76 56,88 C 60,98 54,120 48,150 C 30,152 15,155 0,155 C -15,155 -30,152 -48,150 C -54,120 -60,98 -56,88 C -50,76 -35,70 -18,70 Z" 
+            className={getRegionClass('peito')} 
+          />
           
           {/* Abdômen (Lower Torso) */}
-          <path id="abdomen" d="M 74 133 Q 100 139 126 133 L 120 190 Q 100 205 80 190 Z" className={getRegionClass('abdomen')} />
+          <path 
+            id="abdomen" 
+            d="M -48,150 C -30,152 -15,155 0,155 C 15,155 30,152 48,150 C 45,175 42,205 35,230 C 15,240 5,245 0,245 C -5,245 -15,240 -35,230 C -42,205 -45,175 -48,150 Z" 
+            className={getRegionClass('abdomen')} 
+          />
           
           {/* Braço Esquerdo */}
-          <path id="braco_esquerdo" d="M 64 80 Q 30 85 24 140 Q 20 175 28 195 Q 38 195 38 140 Q 42 100 58 90 Z" className={getRegionClass('braco_esquerdo')} />
+          <path 
+            id="braco_esquerdo" 
+            d="M -56,88 C -72,105 -80,150 -88,210 C -92,235 -78,245 -74,220 C -68,160 -58,125 -48,150 Z" 
+            className={getRegionClass('braco_esquerdo')} 
+          />
           
           {/* Braço Direito */}
-          <path id="braco_direito" d="M 136 80 Q 170 85 176 140 Q 180 175 172 195 Q 162 195 162 140 Q 158 100 142 90 Z" className={getRegionClass('braco_direito')} />
+          <path 
+            id="braco_direito" 
+            d="M 56,88 C 72,105 80,150 88,210 C 92,235 78,245 74,220 C 68,160 58,125 48,150 Z" 
+            className={getRegionClass('braco_direito')} 
+          />
           
           {/* Perna Esquerda */}
-          <path id="perna_esquerda" d="M 80 195 L 75 295 Q 73 315 80 325 L 70 425 Q 70 435 85 435 L 90 325 Q 96 305 96 200 Z" className={getRegionClass('perna_esquerda')} />
+          <path 
+            id="perna_esquerda" 
+            d="M -35,230 C -20,238 -10,243 -2,245 C -5,280 -12,320 -15,410 C -18,425 -32,430 -30,400 C -25,350 -38,280 -35,230 Z" 
+            className={getRegionClass('perna_esquerda')} 
+          />
           
           {/* Perna Direita */}
-          <path id="perna_direita" d="M 120 195 L 125 295 Q 127 315 120 325 L 130 425 Q 130 435 115 435 L 110 325 Q 104 305 104 200 Z" className={getRegionClass('perna_direita')} />
+          <path 
+            id="perna_direita" 
+            d="M 35,230 C 20,238 10,243 2,245 C 5,280 12,320 15,410 C 18,425 32,430 30,400 C 25,350 38,280 35,230 Z" 
+            className={getRegionClass('perna_direita')} 
+          />
           
-          {/* Joelho Esquerdo - desenhado por cima da perna para destacar se especificado */}
+          {/* Joelho Esquerdo - destacado na panturrilha/joelho */}
           {isAffected('joelho_esquerdo') && (
-            <circle id="joelho_esquerdo" cx="77" cy="318" r="12" className={cn(getRegionClass('joelho_esquerdo'), "stroke-[3px]")} />
+            <ellipse id="joelho_esquerdo" cx="-23" cy="320" rx="9" ry="12" className={cn(getRegionClass('joelho_esquerdo'), "stroke-[2.5px] drop-shadow-md")} />
           )}
           
-          {/* Joelho Direito - desenhado por cima da perna para destacar se especificado */}
+          {/* Joelho Direito - destacado na panturrilha/joelho */}
           {isAffected('joelho_direito') && (
-            <circle id="joelho_direito" cx="123" cy="318" r="12" className={cn(getRegionClass('joelho_direito'), "stroke-[3px]")} />
+            <ellipse id="joelho_direito" cx="23" cy="320" rx="9" ry="12" className={cn(getRegionClass('joelho_direito'), "stroke-[2.5px] drop-shadow-md")} />
           )}
         </g>
       </svg>

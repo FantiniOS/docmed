@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "@/components/ui/toast";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { BodyMap } from "@/components/paciente/body-map";
 
 interface ResumoClinicoSecaoProps {
@@ -58,7 +59,7 @@ export function ResumoClinicoBotao({
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!resumo) return;
     try {
       const doc = new jsPDF();
@@ -69,6 +70,37 @@ export function ResumoClinicoBotao({
       doc.setFontSize(12);
       const textLines = doc.splitTextToSize(resumo, 180);
       doc.text(textLines, 10, 30);
+
+      const mapElement = document.getElementById("body-map-container");
+      if (mapElement) {
+        // Usa html2canvas para tirar um "screenshot" da DOM renderizada do BodyMap
+        const canvas = await html2canvas(mapElement, { 
+          scale: 2, 
+          backgroundColor: null, // Preserva transparência
+          logging: false
+        });
+        const imgData = canvas.toDataURL("image/png");
+        
+        const yPosTextEnd = 30 + (textLines.length * 6);
+        let currentY = yPosTextEnd + 15;
+        
+        const imgWidth = 70;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Verifica se a imagem ultrapassa o final da página (297mm é A4)
+        if (currentY + imgHeight > 280) {
+           doc.addPage();
+           currentY = 20;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Mapa Topográfico de Focos Ativos:", 10, currentY);
+        currentY += 10;
+        
+        // Centraliza a imagem no PDF (largura total A4: 210mm)
+        doc.addImage(imgData, "PNG", (210 - imgWidth) / 2, currentY, imgWidth, imgHeight);
+      }
+
       doc.save(`Resumo_${paciente.nome.replace(/\s+/g, '_')}.pdf`);
       toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
     } catch (error: any) {
@@ -130,7 +162,9 @@ export function ResumoClinicoBotao({
                 <Sparkles className="w-4 h-4 text-rose-500" />
                 Mapa Corporal
               </h3>
-              <BodyMap regioesAfetadas={regioesAfetadas} className="h-full min-h-[380px] bg-white dark:bg-zinc-900 shadow-sm" />
+              <div id="body-map-container" className="w-full flex justify-center bg-white dark:bg-zinc-900 shadow-sm rounded-2xl">
+                <BodyMap regioesAfetadas={regioesAfetadas} className="h-full min-h-[380px] border-none shadow-none" />
+              </div>
             </div>
           </div>
         </CardContent>
