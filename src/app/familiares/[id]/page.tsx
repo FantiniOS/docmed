@@ -94,18 +94,15 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
 
   const { familiar, exames, relatorios } = data;
   const idade = calcularIdade(familiar.data_nascimento);
-  const alergias = familiar.alergias
-    ?.split(",")
-    .map((a) => a.trim())
-    .filter(Boolean);
-  const doencas = familiar.doencas_cronicas
-    ?.split(",")
-    .map((d) => d.trim())
-    .filter(Boolean);
-  const medicamentos = familiar.medicamentos_uso_continuo
-    ?.split(",")
-    .map((m) => m.trim())
-    .filter(Boolean);
+  const splitTags = (str: string | null | undefined) =>
+    str
+      ?.split(/[\n,;]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  const alergias = splitTags(familiar.alergias);
+  const doencas = splitTags(familiar.doencas_cronicas);
+  const medicamentos = splitTags(familiar.medicamentos_uso_continuo);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
