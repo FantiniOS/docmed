@@ -101,9 +101,6 @@ REGRAS CRÍTICAS:
         const response = await fetch(url);
         if (!response.ok) return;
         const arrayBuffer = await response.arrayBuffer();
-        
-        // Converte explicitamente para Base64 para garantir compatibilidade com o Vercel AI SDK
-        const base64Data = Buffer.from(arrayBuffer).toString('base64');
         const contentType = response.headers.get('content-type') || 'application/pdf';
         const isImage = contentType.startsWith('image/');
         
@@ -112,13 +109,13 @@ REGRAS CRÍTICAS:
         if (isImage) {
           contentParts.push({ 
             type: 'image', 
-            image: `data:${contentType};base64,${base64Data}` 
+            image: arrayBuffer 
           });
         } else {
           contentParts.push({ 
             type: 'file', 
-            data: base64Data, 
-            mimeType: contentType 
+            data: arrayBuffer, 
+            mediaType: contentType 
           });
         }
       } catch (e) {
@@ -163,11 +160,8 @@ REGRAS CRÍTICAS:
           'pe_esquerdo', 'pe_direito'
         ])).describe('Lista de regiões do corpo afetadas com base SOMENTE em achados concretos nas observações dos exames ou evolução clínica. Seja extremamente granular e preciso. NÃO inclua regiões baseado apenas no nome do exame — só inclua se houver achados reais. Retorne vazio se nenhum problema físico confirmado.')
       }),
+      system: systemPrompt,
       messages: [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
         {
           role: 'user',
           content: contentParts
