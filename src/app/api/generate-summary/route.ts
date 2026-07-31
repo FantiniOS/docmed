@@ -36,9 +36,22 @@ export async function POST(req: Request) {
     // LIMPEZA DE DADOS — Enviar apenas campos relevantes para a IA
     // =============================================
 
+    let idadeCalculada = 'Desconhecida';
+    if (paciente.data_nascimento) {
+      const nascC = new Date(paciente.data_nascimento);
+      const hoje = new Date();
+      let idade = hoje.getFullYear() - nascC.getFullYear();
+      const m = hoje.getMonth() - nascC.getMonth();
+      if (m < 0 || (m === 0 && hoje.getDate() < nascC.getDate())) {
+        idade--;
+      }
+      idadeCalculada = `${idade} anos`;
+    }
+
     const pacienteLimpo = {
       nome: paciente.nome,
       data_nascimento: paciente.data_nascimento,
+      idade_calculada: idadeCalculada,
       sexo: paciente.sexo,
       tipo_sanguineo: paciente.tipo_sanguineo,
       alergias: paciente.alergias || 'Não reportadas',
@@ -87,7 +100,8 @@ REGRAS CRÍTICAS:
 7. Estruture o relatório com seções tituladas usando ## e emojis.
 8. Destaque valores laboratoriais alterados com negrito (**valor**).
 9. Sempre que possível, inclua valores de referência ao lado dos resultados.
-10. Mapeie com precisão cirúrgica as regiões anatômicas afetadas baseando-se SOMENTE em dados concretos dos laudos.`;
+10. Mapeie com precisão cirúrgica as regiões anatômicas afetadas baseando-se SOMENTE em dados concretos dos laudos.
+11. NUNCA calcule a idade do paciente. Utilize EXATAMENTE a idade fornecida no campo "idade_calculada" do contexto.`;
 
     // Preparar conteúdo para a IA (Textos + Arquivos Anexos)
     const contentParts: any[] = [
