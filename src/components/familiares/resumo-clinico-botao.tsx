@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
-import jsPDF from "jspdf";
-import { toPng } from 'html-to-image';
 import { BodyMap } from "@/components/paciente/body-map";
 import ReactMarkdown from 'react-markdown';
+import { gerarPDFProfissional } from "@/lib/pdf-generator";
 
 interface ResumoClinicoSecaoProps {
   paciente: Familiar;
@@ -60,29 +59,10 @@ export function ResumoClinicoBotao({
   };
 
   const handleExportPDF = async () => {
-    const elemento = relatorioRef.current;
-    if (!resumo || !elemento) return;
+    if (!resumo) return;
     try {
-      // O html-to-image suporta cores lab(), oklch() nativamente
-      const dataUrl = await toPng(elemento, {
-        quality: 1,
-        backgroundColor: '#ffffff',
-        pixelRatio: 2 // Garante a alta resolução no PDF
-      });
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const larguraPdf = pdf.internal.pageSize.getWidth();
-      
-      // Carrega a imagem para calcular a proporção corretamente
-      const img = new window.Image();
-      img.src = dataUrl;
-      img.onload = () => {
-        const alturaPdf = (img.height * larguraPdf) / img.width;
-        // Adiciona margem de 10mm no topo
-        pdf.addImage(dataUrl, 'PNG', 0, 10, larguraPdf, alturaPdf);
-        pdf.save(`dossie-clinico-${paciente.nome.replace(/\s+/g, '_')}.pdf`);
-        toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
-      };
+      await gerarPDFProfissional(paciente, resumo, regioesAfetadas);
+      toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
     } catch (error: any) {
       console.error("Erro ao gerar PDF:", error);
       toast.add({ title: "Erro", description: "Falha ao gerar o PDF.", type: "error" });
