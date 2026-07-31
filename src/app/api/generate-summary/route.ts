@@ -75,21 +75,74 @@ ${JSON.stringify(evolucaoLimpa, null, 2)}
     const systemPrompt = `Você é um médico triador sênior com mais de 20 anos de experiência em clínica geral e medicina interna.
 
 REGRAS CRÍTICAS:
-1. NUNCA INVENTE ou FABRIQUE achados, resultados ou interpretações de exames. Se o campo "observacoes_do_laudo" estiver null ou vazio, isso significa que o conteúdo do laudo NÃO foi transcrito no sistema. Nesse caso, escreva EXATAMENTE: "Laudo não disponível para análise textual. Recomenda-se consultar o documento original."
-2. NÃO escreva explicações didáticas genéricas sobre o que um exame "serve para" ou "costuma avaliar". Isso é PROIBIDO. Você deve reportar APENAS os achados reais encontrados no campo "observacoes_do_laudo".
-3. Se há observações disponíveis, analise-as profundamente: identifique valores alterados, correlacione com o quadro clínico e destaque alertas.
-4. Correlacione achados entre diferentes exames quando possível (ex: alteração renal + hipertensão = risco cardiovascular elevado).
-5. Use linguagem técnica mas acessível.
-6. Estruture o relatório com seções tituladas usando ## e emojis.
-7. Destaque valores laboratoriais alterados com negrito (**valor**).
-8. Sempre que possível, inclua valores de referência ao lado dos resultados.
-9. Mapeie com precisão cirúrgica as regiões anatômicas afetadas baseando-se SOMENTE em dados concretos.
-10. Para exames sem laudo transcrito, ainda assim registre o exame (nome, data, médico) e informe que o laudo precisa ser consultado no original.`;
+1. Leia ATENTAMENTE os documentos e imagens anexados a esta requisição. Eles contêm os laudos completos dos exames e relatórios médicos.
+2. NUNCA INVENTE ou FABRIQUE achados. Extraia os dados REAIS dos documentos anexados (arquivos PDF, imagens).
+3. Se um exame não possuir arquivo anexado e também não possuir observações transcritas, informe que os achados não estão disponíveis.
+4. Analise profundamente os laudos: identifique valores alterados, correlacione com o quadro clínico e destaque alertas.
+5. Correlacione achados entre diferentes exames quando possível (ex: alteração renal + hipertensão = risco cardiovascular elevado).
+6. Use linguagem técnica mas acessível.
+7. Estruture o relatório com seções tituladas usando ## e emojis.
+8. Destaque valores laboratoriais alterados com negrito (**valor**).
+9. Sempre que possível, inclua valores de referência ao lado dos resultados.
+10. Mapeie com precisão cirúrgica as regiões anatômicas afetadas baseando-se SOMENTE em dados concretos dos laudos.`;
+
+    // Preparar conteúdo para a IA (Textos + Arquivos Anexos)
+    const contentParts: any[] = [
+      { type: 'text', text: promptContext },
+      { type: 'text', text: 'Abaixo estão os documentos originais dos exames e relatórios. Analise o conteúdo deles rigorosamente para compor o seu relatório clínico:' }
+    ];
+
+    // Função auxiliar para buscar e anexar arquivos
+    const fetchAndAttachFile = async (url: string, prefixText: string) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return;
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const contentType = response.headers.get('content-type') || 'application/pdf';
+        const isImage = contentType.startsWith('image/');
+        
+        contentParts.push({ type: 'text', text: prefixText });
+        
+        if (isImage) {
+          contentParts.push({ type: 'image', image: arrayBuffer });
+        } else {
+          contentParts.push({ type: 'file', data: arrayBuffer, mediaType: contentType });
+        }
+      } catch (e) {
+        console.error('Erro ao baixar arquivo para IA:', url, e);
+      }
+    };
+
+    // Processar arquivos de exames
+    const fetchPromises: Promise<void>[] = [];
+    
+    if (exames && Array.isArray(exames)) {
+      for (const ex of exames) {
+        if (ex.arquivo_url) {
+          const prefix = `\n--- LAUDO ORIGINAL DO EXAME: ${ex.nome_exame} (${ex.data_exame}) ---`;
+          fetchPromises.push(fetchAndAttachFile(ex.arquivo_url, prefix));
+        }
+      }
+    }
+
+    // Processar arquivos de evolução/relatórios
+    if (evolucao && Array.isArray(evolucao)) {
+      for (const rel of evolucao) {
+        if (rel.arquivo_url) {
+          const prefix = `\n--- DOCUMENTO ORIGINAL: ${rel.titulo} (${rel.data_relatorio}) ---`;
+          fetchPromises.push(fetchAndAttachFile(rel.arquivo_url, prefix));
+        }
+      }
+    }
+
+    // Aguardar o download de todos os arquivos
+    await Promise.all(fetchPromises);
 
     const { object } = await generateObject({
       model: google('gemini-2.5-flash'),
       schema: z.object({
-        summary: z.string().describe('Relatório clínico completo e detalhado, estruturado com títulos em markdown (##). Deve conter obrigatoriamente as seguintes seções: "## ⚠️ Alertas Críticos" (listar alertas graves, valores fora da faixa, situações que requerem atenção imediata — omitir seção se não houver), "## 📋 Perfil do Paciente" (idade, sexo, condições pré-existentes, medicamentos em uso se disponíveis), "## 🔬 Análise dos Exames" (para cada exame: nome, data, médico, e os ACHADOS REAIS do laudo quando disponíveis — NUNCA inventar achados), "## 📈 Evolução Clínica" (linha do tempo dos relatórios/consultas, tendências observadas), "## 🗺️ Mapeamento Topográfico" (descrever as regiões do corpo afetadas baseando-se APENAS em dados concretos), "## 💡 Impressão Clínica e Recomendações" (parecer geral do quadro, sugestões de acompanhamento). Use listas com marcadores (- ) para organizar os itens dentro de cada seção.'),
+        summary: z.string().describe('Relatório clínico completo e detalhado, estruturado com títulos em markdown (##). Deve conter obrigatoriamente as seguintes seções: "## ⚠️ Alertas Críticos" (listar alertas graves, valores fora da faixa, situações que requerem atenção imediata — omitir seção se não houver), "## 📋 Perfil do Paciente" (idade, sexo, condições pré-existentes, medicamentos em uso se disponíveis), "## 🔬 Análise dos Exames" (para cada exame: nome, data, médico, e os ACHADOS REAIS extraídos dos laudos anexados — NUNCA inventar achados, LEIA os arquivos anexos), "## 📈 Evolução Clínica" (linha do tempo dos relatórios/consultas, tendências observadas), "## 🗺️ Mapeamento Topográfico" (descrever as regiões do corpo afetadas baseando-se APENAS em dados concretos), "## 💡 Impressão Clínica e Recomendações" (parecer geral do quadro, sugestões de acompanhamento). Use listas com marcadores (- ) para organizar os itens dentro de cada seção.'),
         regioes_afetadas: z.array(z.enum([
           'cranio', 'cervical', 'coluna_toracica', 'coluna_lombar', 
           'ombro_esquerdo', 'ombro_direito', 'braco_esquerdo', 'braco_direito', 
@@ -98,8 +151,16 @@ REGRAS CRÍTICAS:
           'pe_esquerdo', 'pe_direito'
         ])).describe('Lista de regiões do corpo afetadas com base SOMENTE em achados concretos nas observações dos exames ou evolução clínica. Seja extremamente granular e preciso. NÃO inclua regiões baseado apenas no nome do exame — só inclua se houver achados reais. Retorne vazio se nenhum problema físico confirmado.')
       }),
-      system: systemPrompt,
-      prompt: promptContext,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: contentParts
+        }
+      ]
     });
 
     return NextResponse.json(object);
