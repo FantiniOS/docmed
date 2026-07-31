@@ -3,6 +3,10 @@ import { generateObject } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 
+// Configura o tempo máximo de execução na Vercel para 60 segundos
+// necessário porque o Gemini pode demorar ao ler múltiplos PDFs
+export const maxDuration = 60;
+
 export async function GET() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   return NextResponse.json({ ok: true, key_exists: !!apiKey });
@@ -49,7 +53,6 @@ export async function POST(req: Request) {
       medico_solicitante: e.medicos?.nome || 'Não informado',
       especialidade_medico: e.medicos?.especialidade || null,
       observacoes_do_laudo: e.observacoes || null,
-      // Se não há observações, o laudo não foi transcrito
       laudo_disponivel: !!e.observacoes,
     }));
 
@@ -98,16 +101,25 @@ REGRAS CRÍTICAS:
         const response = await fetch(url);
         if (!response.ok) return;
         const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        
+        // Converte explicitamente para Base64 para garantir compatibilidade com o Vercel AI SDK
+        const base64Data = Buffer.from(arrayBuffer).toString('base64');
         const contentType = response.headers.get('content-type') || 'application/pdf';
         const isImage = contentType.startsWith('image/');
         
         contentParts.push({ type: 'text', text: prefixText });
         
         if (isImage) {
-          contentParts.push({ type: 'image', image: arrayBuffer });
+          contentParts.push({ 
+            type: 'image', 
+            image: `data:${contentType};base64,${base64Data}` 
+          });
         } else {
-          contentParts.push({ type: 'file', data: arrayBuffer, mediaType: contentType });
+          contentParts.push({ 
+            type: 'file', 
+            data: base64Data, 
+            mimeType: contentType 
+          });
         }
       } catch (e) {
         console.error('Erro ao baixar arquivo para IA:', url, e);
