@@ -37,7 +37,7 @@ export async function POST(req: Request) {
           "Outro"
         ]).nullable().describe("Classifique o exame em um dos tipos disponíveis"),
         data_exame: z.string().nullable().describe("Data da realização do exame no formato YYYY-MM-DD. Caso não seja encontrada, retorne null."),
-        observacoes: z.string().nullable().describe("Destaque e liste os valores que estão fora da referência (anormais) e conclusões principais. Use um texto claro, objetivo e em português. Se tudo estiver normal, informe que não há alterações significativas.")
+        observacoes: z.string().nullable().describe("Extraia os ACHADOS PRINCIPAIS e copie a CONCLUSÃO (ou impressão diagnóstica) do exame de forma literal. Destaque e liste os valores que estão fora da referência (anormais). Use um texto claro, objetivo e em português. Se tudo estiver normal, informe que não há alterações significativas, mas sempre inclua a conclusão final do médico radiologista/patologista se estiver presente no documento.")
       }),
       messages: [
         {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
           content: [
             { 
               type: 'text', 
-              text: 'Você é um assistente médico especialista. Analise o documento em anexo (resultado de exame laboratorial ou de imagem) e extraia as informações solicitadas no schema. Na seção de observações, destaque os valores que estão anormais/fora do valor de referência.' 
+              text: 'Você é um assistente médico especialista. Analise o documento em anexo (resultado de exame laboratorial ou de laudo de imagem) e extraia as informações solicitadas no schema. O campo "observacoes" é de extrema importância: transcreva a conclusão médica/impressão diagnóstica e liste os principais achados. Não invente dados que não estão na imagem/documento.' 
             },
             isImage ? {
               type: 'image',
