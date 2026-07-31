@@ -9,6 +9,7 @@ import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } f
 import jsPDF from "jspdf";
 import { toPng } from 'html-to-image';
 import { BodyMap } from "@/components/paciente/body-map";
+import ReactMarkdown from 'react-markdown';
 
 interface ResumoClinicoSecaoProps {
   paciente: Familiar;
@@ -119,8 +120,8 @@ export function ResumoClinicoBotao({
           <CardContent className="p-6">
             <div className="grid md:grid-cols-[1fr_300px] gap-8">
               <div className="flex flex-col gap-4">
-                <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl text-sm whitespace-pre-wrap leading-relaxed border shadow-sm flex-1">
-                  {resumo}
+                <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl text-sm leading-relaxed border shadow-sm flex-1 overflow-auto prose prose-sm dark:prose-invert prose-headings:text-base prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1 prose-li:my-0.5 prose-ul:my-1 max-w-none">
+                  <ReactMarkdown>{resumo}</ReactMarkdown>
                 </div>
               </div>
   
