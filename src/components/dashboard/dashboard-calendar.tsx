@@ -69,10 +69,19 @@ const WEEKDAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
 const WEEKDAY_LABELS_FULL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 /**
+ * Extrai a data local ignorando offsets (corrige fuso horário do BD).
+ */
+function parseLocal(dataString: string): Date {
+  // Remove sufixo Z ou +00:00 para forçar parse como tempo local
+  const cleanStr = dataString.split('+')[0].replace('Z', '');
+  return new Date(cleanStr);
+}
+
+/**
  * Formata hora de uma string ISO.
  */
 function getHora(dataString: string): string {
-  const date = new Date(dataString);
+  const date = parseLocal(dataString);
   return date.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
@@ -117,7 +126,8 @@ export function DashboardCalendar({
     const map = new Map<string, DayEvent[]>();
 
     for (const c of consultas) {
-      const key = c.data_consulta.substring(0, 10); // Extract YYYY-MM-DD directly from ISO string
+      const date = parseLocal(c.data_consulta);
+      const key = getDateKey(date);
       const event: DayEvent = {
         type: "consulta",
         id: c.id,
@@ -135,7 +145,8 @@ export function DashboardCalendar({
     }
 
     for (const e of exames) {
-      const key = e.data_exame.substring(0, 10); // Extract YYYY-MM-DD directly from ISO string
+      const date = parseLocal(e.data_exame);
+      const key = getDateKey(date);
       const event: DayEvent = {
         type: "exame",
         id: e.id,
