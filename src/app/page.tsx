@@ -76,7 +76,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Dashboard
+          Início
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Sua agenda médica familiar em um só lugar

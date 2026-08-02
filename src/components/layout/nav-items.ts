@@ -15,7 +15,7 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   {
-    label: 'Dashboard',
+    label: 'Início',
     href: '/',
     icon: LayoutDashboard,
   },

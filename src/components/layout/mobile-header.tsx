@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/co
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Início", href: "/", icon: LayoutDashboard },
   { label: "Familiares", href: "/familiares", icon: Users },
   { label: "Médicos", href: "/medicos", icon: Stethoscope },
   { label: "Consultas", href: "/consultas", icon: CalendarCheck },
