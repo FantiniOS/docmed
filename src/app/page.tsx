@@ -19,13 +19,6 @@ import type {
 async function getDashboardData() {
   const supabase = await createServerSupabaseClient();
 
-  // Data de hoje no início do dia para filtrar eventos passados
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  // Buscar primeiro dia do mês atual (para o calendário exibir o mês inteiro)
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-
   const [familiaresResult, consultasResult, examesResult] = await Promise.all([
     // Todos os familiares (para acesso rápido)
     supabase
@@ -33,18 +26,16 @@ async function getDashboardData() {
       .select("*")
       .order("nome", { ascending: true }),
 
-    // Consultas a partir do início do mês atual (para mostrar no calendário)
+    // Consultas completas (histórico incluído para o calendário)
     supabase
       .from("consultas")
       .select("*, familiares(*), medicos(*)")
-      .gte("data_consulta", primeiroDiaMes.toISOString())
       .order("data_consulta", { ascending: true }),
 
-    // Exames a partir do início do mês atual (para mostrar no calendário)
+    // Exames completos (histórico incluído para o calendário)
     supabase
       .from("exames")
       .select("*, familiares(*), medicos(*)")
-      .gte("data_exame", primeiroDiaMes.toISOString())
       .order("data_exame", { ascending: true }),
   ]);
 

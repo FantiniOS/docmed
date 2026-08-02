@@ -117,7 +117,7 @@ export function DashboardCalendar({
     const map = new Map<string, DayEvent[]>();
 
     for (const c of consultas) {
-      const key = getDateKey(new Date(c.data_consulta));
+      const key = c.data_consulta.substring(0, 10); // Extract YYYY-MM-DD directly from ISO string
       const event: DayEvent = {
         type: "consulta",
         id: c.id,
@@ -135,7 +135,7 @@ export function DashboardCalendar({
     }
 
     for (const e of exames) {
-      const key = getDateKey(new Date(e.data_exame));
+      const key = e.data_exame.substring(0, 10); // Extract YYYY-MM-DD directly from ISO string
       const event: DayEvent = {
         type: "exame",
         id: e.id,
