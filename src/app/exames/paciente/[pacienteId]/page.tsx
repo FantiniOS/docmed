@@ -8,19 +8,19 @@ import { notFound } from "next/navigation";
 
 interface ExamesPacientePageProps {
   params: Promise<{
-    pacienteId: string;
+    familiarId: string;
   }>;
 }
 
 export default async function ExamesPacientePage({ params }: ExamesPacientePageProps) {
-  const { pacienteId } = await params;
+  const { familiarId } = await params;
   const supabase = await createServerSupabaseClient();
 
   // Buscar os detalhes do paciente
   const { data: paciente, error: pacienteError } = await supabase
-    .from("pacientes")
+    .from("familiares")
     .select("nome")
-    .eq("id", pacienteId)
+    .eq("id", familiarId)
     .single();
 
   if (pacienteError || !paciente) {
@@ -33,12 +33,12 @@ export default async function ExamesPacientePage({ params }: ExamesPacientePageP
     supabase
       .from("exames")
       .select("*, medicos(nome)")
-      .eq("paciente_id", pacienteId)
+      .eq("familiar_id", familiarId)
       .order("data_exame", { ascending: false }),
     supabase
       .from("relatorios")
       .select("*, medicos(nome)")
-      .eq("paciente_id", pacienteId)
+      .eq("familiar_id", familiarId)
       .order("data_relatorio", { ascending: false })
   ]);
 
@@ -86,7 +86,7 @@ export default async function ExamesPacientePage({ params }: ExamesPacientePageP
           <h2 className="text-xl font-bold tracking-tight text-foreground">Relatórios e Laudos</h2>
         </div>
         <Link
-          href={`/relatorios/novo?pacienteId=${pacienteId}`}
+          href={`/relatorios/novo?familiarId=${familiarId}`}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-md text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />

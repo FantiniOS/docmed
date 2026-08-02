@@ -62,10 +62,14 @@ export default async function PacientesPage({
 
   const { data: rawData, error } = await query;
   
+  if (error) {
+    console.error("Supabase Error on /pacientes:", error);
+  }
+
   // ADAPTER: Mapeia o retorno antigo para o formato 'Paciente' esperado pela UI
   const list = (rawData || []).map((item: any) => ({
     ...item,
-    pacienteId: item.familiar_id || item.familiarId || item.id,
+    familiarId: item.familiar_id || item.familiarId || item.id,
     id: item.id,
     nome: item.nome
   })) as Paciente[];
@@ -102,6 +106,12 @@ export default async function PacientesPage({
           />
         </form>
       </div>
+
+      {error && (
+        <div className="p-4 bg-red-100 text-red-700 rounded-md">
+          Erro ao buscar dados: {error.message}
+        </div>
+      )}
 
       {list.length === 0 ? (
         <Card>

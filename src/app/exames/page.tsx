@@ -8,7 +8,7 @@ export default async function ExamesPage() {
   // Buscar todos os pacientes, e contar quantos exames cada um possui
   // Utilizamos exames(id) para que o Supabase retorne um array de ids de exames para cada paciente
   const { data: pacientes, error } = await supabase
-    .from("pacientes")
+    .from("familiares")
     .select("id, nome, exames(id)")
     .order("nome", { ascending: true });
 

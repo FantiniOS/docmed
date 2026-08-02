@@ -17,7 +17,7 @@ export default async function EditarConsultaPage({
 
   const [consultaRes, pacientesRes, medicosRes] = await Promise.all([
     supabase.from("consultas").select("*").eq("id", id).single(),
-    supabase.from("pacientes").select("*").order("nome", { ascending: true }),
+    supabase.from("familiares").select("*").order("nome", { ascending: true }),
     supabase.from("medicos").select("*").order("nome", { ascending: true }),
   ]);
 

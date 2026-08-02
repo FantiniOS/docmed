@@ -22,7 +22,7 @@ async function getDashboardData() {
   const [pacientesResult, consultasResult, examesResult] = await Promise.all([
     // Todos os pacientes (para acesso rápido)
     supabase
-      .from("pacientes")
+      .from("familiares")
       .select("*")
       .order("nome", { ascending: true }),
 

@@ -57,23 +57,23 @@ async function getPacienteData(id: string) {
   const supabase = await createServerSupabaseClient();
 
   const [pacienteResult, consultasResult, examesResult, relatoriosResult] = await Promise.all([
-    supabase.from("pacientes").select("*").eq("id", id).single(),
+    supabase.from("familiares").select("*").eq("id", id).single(),
     supabase
       .from("consultas")
       .select("*, medicos(*)")
-      .eq("paciente_id", id)
+      .eq("familiar_id", id)
       .order("data_consulta", { ascending: false })
       .limit(10),
     supabase
       .from("exames")
       .select("*, medicos(*)")
-      .eq("paciente_id", id)
+      .eq("familiar_id", id)
       .order("data_exame", { ascending: false })
       .limit(10),
     supabase
       .from("relatorios")
       .select("*, medicos(*)")
-      .eq("paciente_id", id)
+      .eq("familiar_id", id)
       .order("data_relatorio", { ascending: false })
       .limit(10),
   ]);

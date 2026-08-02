@@ -40,7 +40,7 @@ export interface Medico {
  */
 export interface Consulta {
   id: string;
-  paciente_id: string;
+  familiar_id: string;
   medico_id: string;
   data_consulta: string; // ISO datetime string
   motivo: string | null;
@@ -59,7 +59,7 @@ export interface Consulta {
  */
 export interface Exame {
   id: string;
-  paciente_id: string;
+  familiar_id: string;
   medico_id: string | null;
   nome_exame: string;
   tipo_exame: string | null;
@@ -77,7 +77,7 @@ export interface Exame {
  */
 export interface Relatorio {
   id: string;
-  paciente_id: string;
+  familiar_id: string;
   medico_id: string | null;
   titulo: string;
   data_relatorio: string; // ISO date string

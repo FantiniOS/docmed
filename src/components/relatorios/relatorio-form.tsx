@@ -56,7 +56,7 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
   } = useForm<RelatorioSchemaType>({
     resolver: zodResolver(relatorioSchema),
     defaultValues: initialData || {
-      paciente_id: "",
+      familiar_id: "",
       medico_id: null,
       titulo: "",
       data_relatorio: "",
@@ -111,7 +111,7 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
 
       // Se veio de um paciente específico, podemos voltar para a página dele,
       // senão, volta para exames
-      router.push(data.paciente_id ? `/exames/paciente/${data.paciente_id}` : `/exames`);
+      router.push(data.familiar_id ? `/exames/paciente/${data.familiar_id}` : `/exames`);
       router.refresh();
     } catch (err: any) {
       setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
@@ -123,7 +123,7 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Link
-        href={initialData?.paciente_id ? `/exames/paciente/${initialData.paciente_id}` : `/exames`}
+        href={initialData?.familiar_id ? `/exames/paciente/${initialData.familiar_id}` : `/exames`}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -156,7 +156,7 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
               </Label>
               <Controller
                 control={control}
-                name="paciente_id"
+                name="familiar_id"
                 render={({ field }) => (
                   <div>
                     <Select
@@ -165,7 +165,7 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
                     >
                       <SelectTrigger
                         className="w-full"
-                        aria-invalid={!!errors.paciente_id}
+                        aria-invalid={!!errors.familiar_id}
                       >
                         <SelectValue placeholder="Selecione o paciente">
                           {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
@@ -179,9 +179,9 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.paciente_id && (
+                    {errors.familiar_id && (
                       <p className="text-xs text-destructive mt-1">
-                        {errors.paciente_id.message}
+                        {errors.familiar_id.message}
                       </p>
                     )}
                   </div>
@@ -330,7 +330,7 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
 
       <div className="flex justify-end gap-3">
         <Link
-          href={initialData?.paciente_id ? `/exames/paciente/${initialData.paciente_id}` : `/exames`}
+          href={initialData?.familiar_id ? `/exames/paciente/${initialData.familiar_id}` : `/exames`}
           className="inline-flex items-center justify-center h-9 px-4 rounded-lg border border-input bg-transparent text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           Cancelar

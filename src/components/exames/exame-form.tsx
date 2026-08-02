@@ -64,7 +64,7 @@ export function ExameForm({ pacientes, medicos, initialData, defaultDate }: Exam
   } = useForm<ExameSchemaType>({
     resolver: zodResolver(exameSchema),
     defaultValues: initialData || {
-      paciente_id: "",
+      familiar_id: "",
       medico_id: null,
       nome_exame: "",
       tipo_exame: null,
@@ -223,7 +223,7 @@ export function ExameForm({ pacientes, medicos, initialData, defaultDate }: Exam
               </Label>
               <Controller
                 control={control}
-                name="paciente_id"
+                name="familiar_id"
                 render={({ field }) => (
                   <div>
                     <Select
@@ -232,7 +232,7 @@ export function ExameForm({ pacientes, medicos, initialData, defaultDate }: Exam
                     >
                       <SelectTrigger
                         className="w-full"
-                        aria-invalid={!!errors.paciente_id}
+                        aria-invalid={!!errors.familiar_id}
                       >
                         <SelectValue placeholder="Selecione o paciente">
                           {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
@@ -246,9 +246,9 @@ export function ExameForm({ pacientes, medicos, initialData, defaultDate }: Exam
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.paciente_id && (
+                    {errors.familiar_id && (
                       <p className="text-xs text-destructive mt-1">
-                        {errors.paciente_id.message}
+                        {errors.familiar_id.message}
                       </p>
                     )}
                   </div>

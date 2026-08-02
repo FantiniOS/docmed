@@ -13,7 +13,7 @@ export default async function EditarExamePage({
   // Buscar o exame, além das listas de pacientes e médicos para os selects
   const [exameRes, pacientesRes, medicosRes] = await Promise.all([
     supabase.from("exames").select("*").eq("id", id).single(),
-    supabase.from("pacientes").select("*").order("nome", { ascending: true }),
+    supabase.from("familiares").select("*").order("nome", { ascending: true }),
     supabase.from("medicos").select("*").order("nome", { ascending: true }),
   ]);
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const exameSchema = z.object({
-  paciente_id: z.string().min(1, "Selecione o paciente"),
+  familiar_id: z.string().min(1, "Selecione o paciente"),
   medico_id: z.string().nullable().transform((val) => val === "none" ? null : val || null),
   nome_exame: z
     .string()

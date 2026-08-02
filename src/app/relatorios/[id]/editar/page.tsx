@@ -12,7 +12,7 @@ export default async function EditarRelatorioPage({
   const supabase = await createServerSupabaseClient();
 
   const [pacientesRes, medicosRes, relatorioRes] = await Promise.all([
-    supabase.from("pacientes").select("*").order("nome"),
+    supabase.from("familiares").select("*").order("nome"),
     supabase.from("medicos").select("*").order("nome"),
     supabase.from("relatorios").select("*").eq("id", id).single(),
   ]);
@@ -28,7 +28,7 @@ export default async function EditarRelatorioPage({
   // Prepara os dados para o formulário
   const initialData = {
     id: relatorio.id,
-    paciente_id: relatorio.paciente_id,
+    familiar_id: relatorio.familiar_id,
     medico_id: relatorio.medico_id,
     titulo: relatorio.titulo,
     data_relatorio: relatorio.data_relatorio,

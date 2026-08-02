@@ -5,13 +5,13 @@ import type { Paciente, Medico } from "@/types/database";
 export default async function NovoRelatorioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pacienteId?: string }>;
+  searchParams: Promise<{ familiarId?: string }>;
 }) {
   const supabase = await createServerSupabaseClient();
-  const { pacienteId } = await searchParams;
+  const { familiarId } = await searchParams;
 
   const [pacientesRes, medicosRes] = await Promise.all([
-    supabase.from("pacientes").select("*").order("nome"),
+    supabase.from("familiares").select("*").order("nome"),
     supabase.from("medicos").select("*").order("nome"),
   ]);
 
@@ -23,8 +23,8 @@ export default async function NovoRelatorioPage({
       <RelatorioForm 
         pacientes={pacientes} 
         medicos={medicos} 
-        initialData={pacienteId ? {
-          paciente_id: pacienteId,
+        initialData={familiarId ? {
+          familiar_id: familiarId,
           titulo: "",
           data_relatorio: "",
           medico_id: null,

@@ -10,7 +10,7 @@ export default async function NovoExamePage({
   const { data: dataParam } = await searchParams;
 
   const [pacientesRes, medicosRes] = await Promise.all([
-    supabase.from("pacientes").select("*").order("nome", { ascending: true }),
+    supabase.from("familiares").select("*").order("nome", { ascending: true }),
     supabase.from("medicos").select("*").order("nome", { ascending: true }),
   ]);
 

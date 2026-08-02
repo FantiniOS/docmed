@@ -97,11 +97,11 @@ export function PacienteForm({ initialData }: { initialData?: PacienteSchemaType
       const payload = { ...data, foto_url: fotoUrl };
 
       if (initialData?.id) {
-        const { error } = await supabase.from("pacientes").update(payload).eq("id", initialData.id);
+        const { error } = await supabase.from("familiares").update(payload).eq("id", initialData.id);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Paciente atualizado.", type: "success" });
       } else {
-        const { error } = await supabase.from("pacientes").insert([payload]);
+        const { error } = await supabase.from("familiares").insert([payload]);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Paciente cadastrado.", type: "success" });
       }

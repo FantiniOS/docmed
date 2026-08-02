@@ -63,7 +63,7 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
   } = useForm<ConsultaSchemaType>({
     resolver: zodResolver(consultaSchema),
     defaultValues: initialData || {
-      paciente_id: "",
+      familiar_id: "",
       medico_id: "",
       data_consulta: defaultDate || "",
       motivo: null,
@@ -75,7 +75,7 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
     },
   });
 
-  const selectedPacienteId = useWatch({ control, name: "paciente_id" });
+  const selectedFamiliarId = useWatch({ control, name: "familiar_id" });
   const selectedMedicoId = useWatch({ control, name: "medico_id" });
   const selectedEspecialidade = useWatch({ control, name: "especialidade" });
   const isEditing = !!initialData?.id;
@@ -142,7 +142,7 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
                   <SheetTitle>Histórico do Paciente</SheetTitle>
                 </SheetHeader>
                 <PatientHistoryTimeline
-                  pacienteId={selectedPacienteId}
+                  familiarId={selectedFamiliarId}
                   currentConsultaId={initialData?.id}
                   medicoId={selectedMedicoId === "none" ? null : selectedMedicoId}
                   especialidade={selectedEspecialidade}
@@ -166,11 +166,11 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
               </Label>
               <Controller
                 control={control}
-                name="paciente_id"
+                name="familiar_id"
                 render={({ field }) => (
                   <div>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full" aria-invalid={!!errors.paciente_id}>
+                      <SelectTrigger className="w-full" aria-invalid={!!errors.familiar_id}>
                         <SelectValue placeholder="Selecione o paciente">
                           {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
@@ -183,9 +183,9 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.paciente_id && (
+                    {errors.familiar_id && (
                       <p className="text-xs text-destructive mt-1">
-                        {errors.paciente_id.message}
+                        {errors.familiar_id.message}
                       </p>
                     )}
                   </div>
@@ -389,7 +389,7 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
       {/* Coluna Direita: Timeline de Histórico (Visível apenas em Desktop) */}
       <div className="hidden lg:block lg:col-span-1 sticky top-24 h-[calc(100vh-8rem)]">
         <PatientHistoryTimeline
-          pacienteId={selectedPacienteId}
+          familiarId={selectedFamiliarId}
           currentConsultaId={initialData?.id}
         />
       </div>
