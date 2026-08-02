@@ -42,9 +42,11 @@ interface ExameFormProps {
   familiares: Familiar[];
   medicos: Medico[];
   initialData?: ExameSchemaType & { id?: string };
+  /** Data pré-preenchida vinda do calendário do Dashboard (formato date ou datetime-local). */
+  defaultDate?: string;
 }
 
-export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) {
+export function ExameForm({ familiares, medicos, initialData, defaultDate }: ExameFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function ExameForm({ familiares, medicos, initialData }: ExameFormProps) 
       medico_id: null,
       nome_exame: "",
       tipo_exame: null,
-      data_exame: "",
+      data_exame: defaultDate ? defaultDate.split("T")[0] : "",
       arquivo_url: null,
       observacoes: null,
       local_atendimento: null,

@@ -1,8 +1,13 @@
 import { ConsultaForm } from "@/components/consultas/consulta-form";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
-export default async function NovaConsultaPage() {
+export default async function NovaConsultaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ data?: string }>;
+}) {
   const supabase = await createServerSupabaseClient();
+  const { data: dataParam } = await searchParams;
 
   const [familiaresRes, medicosRes] = await Promise.all([
     supabase.from("familiares").select("*").order("nome", { ascending: true }),
@@ -14,7 +19,11 @@ export default async function NovaConsultaPage() {
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-in-up">
-      <ConsultaForm familiares={familiares} medicos={medicos} />
+      <ConsultaForm
+        familiares={familiares}
+        medicos={medicos}
+        defaultDate={dataParam}
+      />
     </div>
   );
 }

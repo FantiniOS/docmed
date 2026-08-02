@@ -37,9 +37,11 @@ interface ConsultaFormProps {
   familiares: Familiar[];
   medicos: Medico[];
   initialData?: ConsultaSchemaType & { id?: string };
+  /** Data pré-preenchida vinda do calendário do Dashboard (formato datetime-local). */
+  defaultDate?: string;
 }
 
-export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormProps) {
+export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: ConsultaFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -54,6 +56,7 @@ export function ConsultaForm({ familiares, medicos, initialData }: ConsultaFormP
     defaultValues: initialData || {
       familiar_id: "",
       medico_id: "",
+      data_consulta: defaultDate || "",
       motivo: null,
       diagnostico: null,
       prescricao: null,

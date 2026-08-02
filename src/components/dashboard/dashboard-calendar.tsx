@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   startOfMonth,
   endOfMonth,
@@ -25,10 +26,17 @@ import {
   User,
   Stethoscope,
   MapPin,
+  Plus,
+  CalendarPlus,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -78,10 +86,18 @@ function getDateKey(date: Date): string {
 }
 
 /**
+ * Formata a data para o formato aceito pelo input datetime-local.
+ */
+function toDatetimeLocalValue(date: Date): string {
+  return format(date, "yyyy-MM-dd'T'09:00");
+}
+
+/**
  * Calendário mensal interativo para o Dashboard.
  *
- * - Exibe indicadores visuais (bolinhas) nos dias com consultas (azul) e exames (âmbar).
- * - Ao clicar em um dia com eventos, abre um dialog com o resumo dos agendamentos.
+ * - Indicadores visuais (bolinhas) nos dias com consultas (azul) e exames (âmbar).
+ * - Hover em dia com eventos → Tooltip com resumo rápido dos agendamentos.
+ * - Clique em qualquer dia → Dialog de "Novo Agendamento" com data pré-preenchida.
  * - Navegação entre meses com botões < e >.
  * - Dia atual destacado com anel e animação pulse.
  */
@@ -89,9 +105,11 @@ export function DashboardCalendar({
   consultas,
   exames,
 }: DashboardCalendarProps) {
+  const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newBookingDialogOpen, setNewBookingDialogOpen] = useState(false);
+  const [eventsDialogOpen, setEventsDialogOpen] = useState(false);
 
   // Construir mapa de eventos por dia para lookup O(1)
   const eventsByDay = useMemo(() => {
@@ -150,14 +168,31 @@ export function DashboardCalendar({
     return eventsByDay.get(getDateKey(selectedDate)) || [];
   }, [selectedDate, eventsByDay]);
 
-  function handleDayClick(day: Date) {
-    const key = getDateKey(day);
-    const events = eventsByDay.get(key);
-    if (events && events.length > 0) {
-      setSelectedDate(day);
-      setDialogOpen(true);
-    }
-  }
+  // Clique em qualquer dia → abre dialog de novo agendamento
+  const handleDayClick = useCallback((day: Date) => {
+    setSelectedDate(day);
+    setNewBookingDialogOpen(true);
+  }, []);
+
+  // Abrir dialog de eventos existentes
+  const handleViewEvents = useCallback(() => {
+    setNewBookingDialogOpen(false);
+    setEventsDialogOpen(true);
+  }, []);
+
+  // Navegar para formulário de nova consulta com data pré-preenchida
+  const handleNewConsulta = useCallback(() => {
+    if (!selectedDate) return;
+    const dateParam = toDatetimeLocalValue(selectedDate);
+    router.push(`/consultas/novo?data=${encodeURIComponent(dateParam)}`);
+  }, [selectedDate, router]);
+
+  // Navegar para formulário de novo exame com data pré-preenchida
+  const handleNewExame = useCallback(() => {
+    if (!selectedDate) return;
+    const dateParam = toDatetimeLocalValue(selectedDate);
+    router.push(`/exames/novo?data=${encodeURIComponent(dateParam)}`);
+  }, [selectedDate, router]);
 
   function handlePrevMonth() {
     setCurrentMonth((prev) => subMonths(prev, 1));
@@ -235,29 +270,25 @@ export function DashboardCalendar({
               const events = eventsByDay.get(key) || [];
               const hasConsulta = events.some((e) => e.type === "consulta");
               const hasExame = events.some((e) => e.type === "exame");
+              const hasEvents = events.length > 0;
               const isCurrentMonth = isSameMonth(day, currentMonth);
               const today = isToday(day);
               const isSelected =
                 selectedDate != null && isSameDay(day, selectedDate);
 
-              return (
+              const dayButton = (
                 <button
                   key={key}
                   type="button"
                   onClick={() => handleDayClick(day)}
-                  disabled={events.length === 0}
                   className={`
                     relative flex flex-col items-center justify-center
                     py-2 sm:py-2.5 rounded-lg transition-all duration-150
+                    cursor-pointer hover:bg-accent/60
                     ${
                       isCurrentMonth
                         ? "text-foreground"
                         : "text-muted-foreground/40"
-                    }
-                    ${
-                      events.length > 0
-                        ? "cursor-pointer hover:bg-accent/60"
-                        : "cursor-default"
                     }
                     ${isSelected ? "bg-accent ring-1 ring-primary/30" : ""}
                     ${today ? "font-bold" : ""}
@@ -291,6 +322,56 @@ export function DashboardCalendar({
                   )}
                 </button>
               );
+
+              // Se o dia tem eventos, envolve com Tooltip para hover
+              if (hasEvents) {
+                return (
+                  <Tooltip key={key}>
+                    <TooltipTrigger render={dayButton} />
+                    <TooltipContent
+                      side="top"
+                      className="max-w-[220px] p-0 bg-popover text-popover-foreground ring-1 ring-foreground/10"
+                    >
+                      <div className="p-2 space-y-1">
+                        <p
+                          className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1"
+                          suppressHydrationWarning
+                        >
+                          {format(day, "dd MMM", { locale: ptBR })} ·{" "}
+                          {events.length} evento{events.length !== 1 ? "s" : ""}
+                        </p>
+                        {events.slice(0, 4).map((event) => (
+                          <div
+                            key={`${event.type}-${event.id}`}
+                            className="flex items-center gap-1.5 text-xs"
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                event.type === "consulta"
+                                  ? "bg-blue-500"
+                                  : "bg-amber-500"
+                              }`}
+                            />
+                            <span className="font-medium truncate">
+                              {event.hora}
+                            </span>
+                            <span className="text-muted-foreground truncate">
+                              {event.title}
+                            </span>
+                          </div>
+                        ))}
+                        {events.length > 4 && (
+                          <p className="text-[10px] text-muted-foreground">
+                            +{events.length - 4} mais...
+                          </p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return dayButton;
             })}
           </div>
 
@@ -318,8 +399,116 @@ export function DashboardCalendar({
         </CardContent>
       </Card>
 
-      {/* Dialog de detalhes do dia */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* ============================================================
+         Dialog: Novo Agendamento (abre ao clicar em qualquer dia)
+         ============================================================ */}
+      <Dialog open={newBookingDialogOpen} onOpenChange={setNewBookingDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarPlus className="w-4 h-4 text-primary" />
+              Novo Agendamento
+            </DialogTitle>
+            <DialogDescription suppressHydrationWarning>
+              {selectedDate &&
+                format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", {
+                  locale: ptBR,
+                })}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            {/* Eventos existentes nesse dia */}
+            {selectedDayEvents.length > 0 && (
+              <div className="p-2.5 rounded-lg bg-accent/50 border border-border/50 mb-3">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  Já agendado neste dia
+                </p>
+                <div className="space-y-1">
+                  {selectedDayEvents.slice(0, 3).map((event) => (
+                    <div
+                      key={`${event.type}-${event.id}`}
+                      className="flex items-center gap-1.5 text-xs"
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          event.type === "consulta"
+                            ? "bg-blue-500"
+                            : "bg-amber-500"
+                        }`}
+                      />
+                      <span className="font-medium">{event.hora}</span>
+                      <span className="text-muted-foreground truncate">
+                        {event.title}
+                      </span>
+                    </div>
+                  ))}
+                  {selectedDayEvents.length > 3 && (
+                    <p className="text-[10px] text-muted-foreground">
+                      +{selectedDayEvents.length - 3} mais
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleViewEvents}
+                  className="mt-1.5 text-[11px] text-primary font-medium hover:underline underline-offset-2"
+                >
+                  Ver todos os detalhes →
+                </button>
+              </div>
+            )}
+
+            {/* Escolha: Consulta ou Exame */}
+            <p className="text-xs text-muted-foreground font-medium">
+              O que deseja agendar?
+            </p>
+
+            <button
+              type="button"
+              onClick={handleNewConsulta}
+              className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card hover:bg-blue-500/5 hover:border-blue-500/30 transition-all duration-200 group text-left"
+            >
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                <CalendarCheck className="w-5 h-5 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-foreground group-hover:text-blue-600 transition-colors">
+                  Consulta
+                </span>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Agendar consulta médica
+                </p>
+              </div>
+              <Plus className="w-4 h-4 text-muted-foreground group-hover:text-blue-500 transition-colors" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleNewExame}
+              className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card hover:bg-amber-500/5 hover:border-amber-500/30 transition-all duration-200 group text-left"
+            >
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
+                <FileText className="w-5 h-5 text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-foreground group-hover:text-amber-600 transition-colors">
+                  Exame
+                </span>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Agendar exame médico
+                </p>
+              </div>
+              <Plus className="w-4 h-4 text-muted-foreground group-hover:text-amber-500 transition-colors" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================
+         Dialog: Detalhes dos eventos do dia
+         ============================================================ */}
+      <Dialog open={eventsDialogOpen} onOpenChange={setEventsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
