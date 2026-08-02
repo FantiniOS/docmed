@@ -232,7 +232,11 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
             ) : (
               <div className="grid gap-3">
                 {examesFiltrados.map((exame) => (
-                  <Card key={exame.id} className="transition-all duration-200 hover:bg-accent/30">
+                  <Card 
+                    key={exame.id} 
+                    className="transition-all duration-200 hover:bg-accent/50 cursor-pointer border-transparent hover:border-amber-500/30 shadow-sm hover:shadow-md"
+                    onClick={() => router.push(`/exames/${exame.id}/editar`)}
+                  >
                     <CardContent className="flex items-start gap-4 py-4">
                       {/* Data visual */}
                       <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-amber-500/10 shrink-0">
@@ -280,6 +284,7 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-400 mt-2 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <FileText className="w-3 h-3" />
                             Ver documento
@@ -319,7 +324,11 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
             ) : (
               <div className="grid gap-3">
                 {relatoriosFiltrados.map((relatorio) => (
-                  <Card key={relatorio.id} className="transition-all duration-200 hover:bg-accent/30">
+                  <Card 
+                    key={relatorio.id} 
+                    className="transition-all duration-200 hover:bg-accent/50 cursor-pointer border-transparent hover:border-emerald-500/30 shadow-sm hover:shadow-md"
+                    onClick={() => router.push(`/relatorios/${relatorio.id}/editar`)}
+                  >
                     <CardContent className="flex items-start gap-4 py-4">
                       {/* Data visual */}
                       <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-500/10 shrink-0">
@@ -363,6 +372,7 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-600 mt-2 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <FileText className="w-3 h-3" />
                             Ver documento
