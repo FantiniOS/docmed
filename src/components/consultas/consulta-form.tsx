@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CalendarCheck,
@@ -13,12 +13,20 @@ import {
   Stethoscope,
   Clock,
   FileText,
+  History,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -32,6 +40,7 @@ import { supabase } from "@/lib/supabase";
 import { consultaSchema, type ConsultaSchemaType, tiposConsulta } from "@/lib/validations/consulta";
 import { especialidades } from "@/lib/validations/medico";
 import type { Familiar, Medico } from "@/types/database";
+import { PatientHistoryTimeline } from "./patient-history-timeline";
 
 interface ConsultaFormProps {
   familiares: Familiar[];
@@ -66,6 +75,8 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
     },
   });
 
+  const selectedFamiliarId = useWatch({ control, name: "familiar_id" });
+
   async function onSubmit(data: ConsultaSchemaType) {
     setIsSubmitting(true);
     setSubmitError(null);
@@ -91,24 +102,49 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Link
-        href="/consultas"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Voltar para Consultas
-      </Link>
+    <div className="grid lg:grid-cols-3 gap-6 items-start">
+      {/* Coluna Esquerda: Formulário (ocupa 2 colunas no desktop) */}
+      <div className="lg:col-span-2 space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <Link
+            href="/consultas"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para Consultas
+          </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <CalendarCheck className="w-6 h-6 text-blue-500" />
-          {initialData ? "Editar Consulta" : "Agendar Consulta"}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Registre os dados da consulta médica.
-        </p>
-      </div>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                <CalendarCheck className="w-6 h-6 text-blue-500" />
+                {initialData ? "Editar Consulta" : "Agendar Consulta"}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Registre os dados da consulta médica.
+              </p>
+            </div>
+
+            <Sheet>
+              <SheetTrigger
+                render={
+                  <Button variant="outline" size="sm" className="lg:hidden flex gap-2">
+                    <History className="w-4 h-4" />
+                    Histórico
+                  </Button>
+                }
+              />
+              <SheetContent side="right" className="w-[90%] sm:max-w-md p-0 pt-10 border-l border-border bg-gray-50/50">
+                <SheetHeader className="px-4 sr-only">
+                  <SheetTitle>Histórico do Paciente</SheetTitle>
+                </SheetHeader>
+                <PatientHistoryTimeline
+                  familiarId={selectedFamiliarId}
+                  currentConsultaId={initialData?.id}
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
 
       <Card>
         <CardHeader>
@@ -326,22 +362,32 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
         </div>
       )}
 
-      <div className="flex justify-end gap-3">
-        <Link
-          href="/consultas"
-          className="inline-flex items-center justify-center h-9 px-4 rounded-lg border border-input bg-transparent text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-        >
-          Cancelar
-        </Link>
-        <Button type="submit" disabled={isSubmitting} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-          {isSubmitting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          {isSubmitting ? "Salvando..." : "Agendar Consulta"}
-        </Button>
+        <div className="flex justify-end gap-3">
+          <Link
+            href="/consultas"
+            className="inline-flex items-center justify-center h-9 px-4 rounded-lg border border-input bg-transparent text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            Cancelar
+          </Link>
+          <Button type="submit" disabled={isSubmitting} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+            {isSubmitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {isSubmitting ? "Salvando..." : "Agendar Consulta"}
+          </Button>
+        </div>
+      </form>
       </div>
-    </form>
+
+      {/* Coluna Direita: Timeline de Histórico (Visível apenas em Desktop) */}
+      <div className="hidden lg:block lg:col-span-1 sticky top-24 h-[calc(100vh-8rem)]">
+        <PatientHistoryTimeline
+          familiarId={selectedFamiliarId}
+          currentConsultaId={initialData?.id}
+        />
+      </div>
+    </div>
   );
 }
