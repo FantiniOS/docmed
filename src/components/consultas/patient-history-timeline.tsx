@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 interface PatientHistoryTimelineProps {
   familiarId: string;
   currentConsultaId?: string;
+  medicoId?: string | null;
+  especialidade?: string | null;
 }
 
 type TimelineEvent = {
@@ -27,6 +29,8 @@ type TimelineEvent = {
 export function PatientHistoryTimeline({
   familiarId,
   currentConsultaId,
+  medicoId,
+  especialidade,
 }: PatientHistoryTimelineProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,25 +46,35 @@ export function PatientHistoryTimeline({
       setIsLoading(true);
 
       try {
-        const [consultasRes, examesRes] = await Promise.all([
+        const [consultasRes] = await Promise.all([
           supabase
             .from("consultas")
             .select("*, medicos(*)")
             .eq("familiar_id", familiarId)
             .order("data_consulta", { ascending: false }),
-          supabase
-            .from("exames")
-            .select("*, medicos(*)")
-            .eq("familiar_id", familiarId)
-            .order("data_exame", { ascending: false }),
         ]);
 
-        const history: TimelineEvent[] = [];
+        let history: TimelineEvent[] = [];
 
         if (consultasRes.data) {
+          const hoje = new Date();
+
           for (const c of consultasRes.data) {
             if (c.id === currentConsultaId) continue;
 
+            const dataConsulta = new Date(c.data_consulta);
+            // Regra A: Apenas Passado
+            if (dataConsulta > hoje) continue;
+
+            const docId = c.medico_id;
+            const docEspec = c.medicos?.especialidade || c.especialidade || null;
+
+            // Regra B: Mesmo Médico (ou especialidade)
+            const matchesMedico = medicoId && docId === medicoId;
+            const matchesEspecialidade = especialidade && docEspec === especialidade;
+            if (!matchesMedico && !matchesEspecialidade) continue;
+
+            // Regra C: Apenas Consultas (já estamos filtrando só na tabela consultas)
             const tags: string[] = [];
             if (c.prescricao) tags.push("Prescrição");
             if (c.diagnostico) tags.push("Diagnóstico");
@@ -68,34 +82,22 @@ export function PatientHistoryTimeline({
             history.push({
               id: `consulta-${c.id}`,
               type: "consulta",
-              date: new Date(c.data_consulta),
+              date: dataConsulta,
               title: c.motivo || "Consulta",
               medico: c.medicos ? `Dr(a). ${c.medicos.nome}` : null,
-              especialidade: c.medicos?.especialidade || c.especialidade || null,
+              especialidade: docEspec,
               resumo: c.diagnostico || c.prescricao || "Sem anotações detalhadas.",
               tags,
             });
           }
         }
 
-        if (examesRes.data) {
-          for (const e of examesRes.data) {
-            const tags: string[] = ["Exame"];
-
-            history.push({
-              id: `exame-${e.id}`,
-              type: "exame",
-              date: new Date(e.data_exame),
-              title: e.nome_exame,
-              medico: e.medicos ? `Dr(a). ${e.medicos.nome}` : null,
-              especialidade: e.medicos?.especialidade || null,
-              resumo: e.observacoes || "Sem observações adicionais.",
-              tags,
-            });
-          }
-        }
-
+        // Ordenação
         history.sort((a, b) => b.date.getTime() - a.date.getTime());
+        
+        // Última Visita Exclusiva
+        history = history.slice(0, 1);
+        
         setEvents(history);
       } catch (error) {
         console.error("Erro ao buscar histórico:", error);
@@ -105,7 +107,7 @@ export function PatientHistoryTimeline({
     }
 
     fetchHistory();
-  }, [familiarId, currentConsultaId]);
+  }, [familiarId, currentConsultaId, medicoId, especialidade]);
 
   const toggleExpand = (id: string) => {
     setExpandedItems((prev) => {
@@ -119,12 +121,26 @@ export function PatientHistoryTimeline({
   if (!familiarId) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 rounded-xl border border-dashed border-border h-full min-h-[300px]">
-        <Clock className="w-8 h-8 text-muted-foreground mb-3" />
+        <Stethoscope className="w-8 h-8 text-muted-foreground mb-3" />
         <p className="text-sm font-medium text-foreground">
-          Selecione um familiar
+          Preencha o formulário
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          O histórico médico aparecerá aqui.
+          Selecione o paciente e o médico para visualizar o histórico.
+        </p>
+      </div>
+    );
+  }
+
+  if (!medicoId && !especialidade) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 rounded-xl border border-dashed border-border h-full min-h-[300px]">
+        <Stethoscope className="w-8 h-8 text-muted-foreground mb-3" />
+        <p className="text-sm font-medium text-foreground">
+          Histórico Médico
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Selecione o Médico Solicitante ou a Especialidade no formulário.
         </p>
       </div>
     );
@@ -150,7 +166,7 @@ export function PatientHistoryTimeline({
         ) : events.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 text-center">
             <p className="text-sm text-muted-foreground">
-              Nenhum histórico anterior encontrado.
+              Nenhum histórico de evolução anterior com este médico.
             </p>
           </div>
         ) : (

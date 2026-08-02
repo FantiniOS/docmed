@@ -76,6 +76,8 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
   });
 
   const selectedFamiliarId = useWatch({ control, name: "familiar_id" });
+  const selectedMedicoId = useWatch({ control, name: "medico_id" });
+  const selectedEspecialidade = useWatch({ control, name: "especialidade" });
   const isEditing = !!initialData?.id;
 
   async function onSubmit(data: ConsultaSchemaType) {
@@ -142,6 +144,8 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
                 <PatientHistoryTimeline
                   familiarId={selectedFamiliarId}
                   currentConsultaId={initialData?.id}
+                  medicoId={selectedMedicoId === "none" ? null : selectedMedicoId}
+                  especialidade={selectedEspecialidade}
                 />
               </SheetContent>
             </Sheet>
