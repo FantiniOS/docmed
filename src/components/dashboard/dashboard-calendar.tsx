@@ -65,7 +65,8 @@ type DayEvent = {
   paciente: string | null;
 };
 
-const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const WEEKDAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
+const WEEKDAY_LABELS_FULL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 /**
  * Formata hora de uma string ISO.
@@ -251,14 +252,18 @@ export function DashboardCalendar({
         </CardHeader>
 
         <CardContent>
+          {/* Container com scroll horizontal para mobile */}
+          <div className="w-full overflow-x-auto pb-2">
+          <div className="min-w-[280px]">
           {/* Header dos dias da semana */}
           <div className="grid grid-cols-7 mb-1">
-            {WEEKDAY_LABELS.map((label) => (
+            {WEEKDAY_LABELS_FULL.map((label, i) => (
               <div
                 key={label}
-                className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wider py-1.5"
+                className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wider py-1 sm:py-1.5"
               >
-                {label}
+                <span className="sm:hidden">{WEEKDAY_LABELS_SHORT[i]}</span>
+                <span className="hidden sm:inline">{label}</span>
               </div>
             ))}
           </div>
@@ -283,7 +288,7 @@ export function DashboardCalendar({
                   onClick={() => handleDayClick(day)}
                   className={`
                     relative flex flex-col items-center justify-center
-                    py-2 sm:py-2.5 rounded-lg transition-all duration-150
+                    p-1 sm:p-2 min-h-[36px] sm:min-h-[44px] rounded-md sm:rounded-lg transition-all duration-150
                     cursor-pointer hover:bg-accent/60
                     ${
                       isCurrentMonth
@@ -297,10 +302,10 @@ export function DashboardCalendar({
                   {/* Número do dia */}
                   <span
                     className={`
-                      text-xs sm:text-sm leading-none z-10
+                      text-[11px] sm:text-sm leading-none z-10
                       ${
                         today
-                          ? "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary text-primary-foreground animate-pulse-soft"
+                          ? "flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-primary text-primary-foreground animate-pulse-soft"
                           : ""
                       }
                     `}
@@ -311,12 +316,12 @@ export function DashboardCalendar({
 
                   {/* Indicadores de eventos */}
                   {(hasConsulta || hasExame) && (
-                    <div className="flex items-center gap-0.5 mt-0.5">
+                    <div className="flex items-center gap-px sm:gap-0.5 mt-0.5">
                       {hasConsulta && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-blue-500" />
                       )}
                       {hasExame && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-amber-500" />
                       )}
                     </div>
                   )}
@@ -376,26 +381,28 @@ export function DashboardCalendar({
           </div>
 
           {/* Legenda */}
-          <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 sm:gap-4 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/50">
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-500" />
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground">
                 Consulta
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-[10px] text-muted-foreground">Exame</span>
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-500" />
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground">Exame</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-[8px] text-primary-foreground font-bold">
+            <div className="flex items-center gap-1">
+              <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-[7px] sm:text-[8px] text-primary-foreground font-bold">
                   {format(new Date(), "d")}
                 </span>
               </span>
-              <span className="text-[10px] text-muted-foreground">Hoje</span>
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground">Hoje</span>
             </div>
           </div>
+          </div>{/* fecha min-w-[280px] */}
+          </div>{/* fecha overflow-x-auto */}
         </CardContent>
       </Card>
 
