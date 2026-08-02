@@ -350,19 +350,24 @@ export function DashboardCalendar({
                         {events.slice(0, 4).map((event) => (
                           <div
                             key={`${event.type}-${event.id}`}
-                            className="flex items-center gap-1.5 text-xs"
+                            className="flex flex-col text-xs leading-tight mb-2 border-l-2 pl-2 pb-1 border-border/50 last:mb-0 last:pb-0"
                           >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                event.type === "consulta"
-                                  ? "bg-blue-500"
-                                  : "bg-amber-500"
-                              }`}
-                            />
-                            <span className="font-medium truncate">
-                              {event.hora}
-                            </span>
-                            <span className="text-muted-foreground truncate">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  event.type === "consulta"
+                                    ? "bg-blue-500"
+                                    : "bg-amber-500"
+                                }`}
+                              />
+                              <span className="font-bold truncate">
+                                {event.paciente || "Familiar não informado"}
+                              </span>
+                              <span className="text-muted-foreground ml-auto text-[10px] shrink-0">
+                                {event.hora}
+                              </span>
+                            </div>
+                            <span className="text-muted-foreground truncate ml-3">
                               {event.title}
                             </span>
                           </div>
