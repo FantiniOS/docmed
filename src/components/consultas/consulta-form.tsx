@@ -19,7 +19,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { SpeechTextarea } from "@/components/ui/speech-textarea";
 import {
   Sheet,
   SheetContent,
@@ -336,20 +336,20 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="diagnostico">Diagnóstico</Label>
-            <Textarea
+            <Label htmlFor="diagnostico">Diagnóstico / Evolução</Label>
+            <SpeechTextarea
               id="diagnostico"
-              placeholder="Ex: Enxaqueca tensional"
-              className="min-h-20"
+              placeholder="Ex: Paciente relata melhora das dores de cabeça..."
+              className="min-h-24"
               {...register("diagnostico")}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="prescricao">Prescrição Médica</Label>
-            <Textarea
+            <SpeechTextarea
               id="prescricao"
               placeholder="Ex: Ibuprofeno 400mg se houver dor, manter rotina de sono."
-              className="min-h-20"
+              className="min-h-24"
               {...register("prescricao")}
             />
           </div>
