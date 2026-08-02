@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarCheck, FileText, Stethoscope, Clock, Calendar, Droplet, ClipboardList } from "lucide-react";
+import { useState, useMemo } from "react";
+import { CalendarCheck, FileText, Stethoscope, Clock, Calendar, Droplet, ClipboardList, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +17,48 @@ interface FamiliarTabsProps {
 
 export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProps) {
   const [activeView, setActiveView] = useState<"consultas" | "exames" | "laudos" | null>(null);
+  const [termoBusca, setTermoBusca] = useState("");
+  const [filtroMedico, setFiltroMedico] = useState("");
+
+  const medicosUnicos = useMemo(() => {
+    const medicos = new Map<string, string>();
+    [...consultas, ...exames, ...relatorios].forEach((item) => {
+      if (item.medicos?.id && item.medicos?.nome) {
+        medicos.set(item.medicos.id, item.medicos.nome);
+      }
+    });
+    return Array.from(medicos.entries());
+  }, [consultas, exames, relatorios]);
+
+  const consultasFiltradas = consultas.filter((c) => {
+    const bateTexto = termoBusca === "" || 
+      c.motivo?.toLowerCase().includes(termoBusca.toLowerCase()) || 
+      c.diagnostico?.toLowerCase().includes(termoBusca.toLowerCase()) ||
+      c.prescricao?.toLowerCase().includes(termoBusca.toLowerCase());
+    const bateMedico = filtroMedico === "" || filtroMedico === "todos" || c.medico_id === filtroMedico;
+    return bateTexto && bateMedico;
+  });
+
+  const examesFiltrados = exames.filter((e) => {
+    const bateTexto = termoBusca === "" || 
+      e.nome_exame?.toLowerCase().includes(termoBusca.toLowerCase()) || 
+      e.observacoes?.toLowerCase().includes(termoBusca.toLowerCase());
+    const bateMedico = filtroMedico === "" || filtroMedico === "todos" || e.medico_id === filtroMedico;
+    return bateTexto && bateMedico;
+  });
+
+  const relatoriosFiltrados = relatorios.filter((r) => {
+    const bateTexto = termoBusca === "" || 
+      r.titulo?.toLowerCase().includes(termoBusca.toLowerCase()) || 
+      r.observacoes?.toLowerCase().includes(termoBusca.toLowerCase());
+    const bateMedico = filtroMedico === "" || filtroMedico === "todos" || r.medico_id === filtroMedico;
+    return bateTexto && bateMedico;
+  });
+
+  const clearFilters = () => {
+    setTermoBusca("");
+    setFiltroMedico("");
+  };
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -56,6 +100,40 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
 
       {/* Conditionally Rendered Content */}
       <div className="mt-6">
+        {/* Toolbar de Filtros */}
+        {activeView && (
+          <div className="flex flex-col md:flex-row gap-4 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por exame, queixa ou observação..."
+                className="pl-9 h-10"
+                value={termoBusca}
+                onChange={(e) => setTermoBusca(e.target.value)}
+              />
+            </div>
+            <Select value={filtroMedico} onValueChange={(val) => setFiltroMedico(val || "")}>
+              <SelectTrigger className="w-full md:w-[220px] h-10">
+                <SelectValue placeholder="Filtrar por Médico" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os Médicos</SelectItem>
+                {medicosUnicos.map(([id, nome]) => (
+                  <SelectItem key={id} value={id}>
+                    Dr(a). {nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(termoBusca || (filtroMedico && filtroMedico !== "todos")) && (
+              <Button variant="ghost" className="h-10 px-3 shrink-0 text-muted-foreground hover:text-foreground" onClick={clearFilters}>
+                <X className="w-4 h-4 mr-2" />
+                Limpar
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Consultas */}
         {activeView === "consultas" && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-300">
@@ -64,18 +142,18 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
               Histórico de Consultas
             </h2>
 
-            {consultas.length === 0 ? (
+            {consultasFiltradas.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
                   <CalendarCheck className="w-8 h-8 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Nenhuma consulta registrada para este familiar
+                    Nenhuma consulta encontrada com os filtros atuais.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3">
-                {consultas.map((consulta) => (
+                {consultasFiltradas.map((consulta) => (
                   <Card key={consulta.id} className="transition-all duration-200 hover:bg-accent/30">
                     <CardContent className="flex items-start gap-4 py-4">
                       {/* Data visual */}
@@ -136,18 +214,18 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
               Últimos Exames
             </h2>
 
-            {exames.length === 0 ? (
+            {examesFiltrados.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
                   <FileText className="w-8 h-8 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Nenhum exame registrado para este familiar
+                    Nenhum exame encontrado com os filtros atuais.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3">
-                {exames.map((exame) => (
+                {examesFiltrados.map((exame) => (
                   <Card key={exame.id} className="transition-all duration-200 hover:bg-accent/30">
                     <CardContent className="flex items-start gap-4 py-4">
                       {/* Data visual */}
@@ -223,18 +301,18 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
               Relatórios e Laudos
             </h2>
 
-            {relatorios.length === 0 ? (
+            {relatoriosFiltrados.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
                   <FileText className="w-8 h-8 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Nenhum relatório médico ou laudo cadastrado
+                    Nenhum laudo encontrado com os filtros atuais.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3">
-                {relatorios.map((relatorio) => (
+                {relatoriosFiltrados.map((relatorio) => (
                   <Card key={relatorio.id} className="transition-all duration-200 hover:bg-accent/30">
                     <CardContent className="flex items-start gap-4 py-4">
                       {/* Data visual */}
