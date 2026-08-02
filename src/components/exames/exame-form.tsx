@@ -68,7 +68,7 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
       medico_id: null,
       nome_exame: "",
       tipo_exame: null,
-      data_exame: defaultDate ? defaultDate.split("T")[0] : "",
+      data_exame: defaultDate || "",
       arquivo_url: null,
       observacoes: null,
       local_atendimento: null,
@@ -334,11 +334,11 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
             <div className="space-y-2">
               <Label htmlFor="data_exame">
                 <Calendar className="w-3.5 h-3.5" />
-                Data do Exame <span className="text-destructive">*</span>
+                Data e Hora do Exame <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="data_exame"
-                type="date"
+                type="datetime-local"
                 aria-invalid={!!errors.data_exame}
                 {...register("data_exame")}
               />
