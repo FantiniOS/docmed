@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { CalendarCheck, FileText, Stethoscope, Clock, Calendar, Droplet, ClipboardList, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +17,7 @@ interface FamiliarTabsProps {
 }
 
 export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProps) {
+  const router = useRouter();
   const [activeView, setActiveView] = useState<"consultas" | "exames" | "laudos" | null>(null);
   const [termoBusca, setTermoBusca] = useState("");
   const [filtroMedico, setFiltroMedico] = useState("");
@@ -154,7 +156,11 @@ export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProp
             ) : (
               <div className="grid gap-3">
                 {consultasFiltradas.map((consulta) => (
-                  <Card key={consulta.id} className="transition-all duration-200 hover:bg-accent/30">
+                  <Card 
+                    key={consulta.id} 
+                    className="transition-all duration-200 hover:bg-accent/50 cursor-pointer border-transparent hover:border-blue-500/30 shadow-sm hover:shadow-md"
+                    onClick={() => router.push(`/consultas/${consulta.id}/editar`)}
+                  >
                     <CardContent className="flex items-start gap-4 py-4">
                       {/* Data visual */}
                       <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-blue-500/10 shrink-0">
