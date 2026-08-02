@@ -209,7 +209,7 @@ export function DashboardCalendar({
 
   return (
     <>
-      <Card>
+      <Card className="[--card-spacing:--spacing(1.5)] sm:[--card-spacing:--spacing(3)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="w-4 h-4 text-primary" />
@@ -235,7 +235,7 @@ export function DashboardCalendar({
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <span
-              className="text-sm font-medium min-w-[120px] text-center capitalize"
+              className="text-xs sm:text-sm font-medium min-w-[90px] sm:min-w-[120px] text-center capitalize"
               suppressHydrationWarning
             >
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
@@ -254,7 +254,7 @@ export function DashboardCalendar({
         <CardContent>
           {/* Container com scroll horizontal para mobile */}
           <div className="w-full overflow-x-auto pb-2">
-          <div className="min-w-[280px]">
+          <div>
           {/* Header dos dias da semana */}
           <div className="grid grid-cols-7 mb-1">
             {WEEKDAY_LABELS_FULL.map((label, i) => (
