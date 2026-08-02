@@ -8,12 +8,12 @@ import { notFound } from "next/navigation";
 
 interface ExamesPacientePageProps {
   params: Promise<{
-    familiarId: string;
+    pacienteId: string;
   }>;
 }
 
 export default async function ExamesPacientePage({ params }: ExamesPacientePageProps) {
-  const { familiarId } = await params;
+  const { pacienteId: familiarId } = await params;
   const supabase = await createServerSupabaseClient();
 
   // Buscar os detalhes do paciente
