@@ -69,12 +69,23 @@ const WEEKDAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
 const WEEKDAY_LABELS_FULL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 /**
- * Extrai a data local ignorando offsets (corrige fuso horário do BD).
+ * Extrai a data local ignorando offsets (corrige fuso horário do BD e bugs de browser).
  */
 function parseLocal(dataString: string): Date {
-  // Remove sufixo Z ou +00:00 para forçar parse como tempo local
-  const cleanStr = dataString.split('+')[0].replace('Z', '');
-  return new Date(cleanStr);
+  if (!dataString) return new Date();
+  
+  // Extrai componentes ignorando qualquer fuso horário anexado (Z, +00:00)
+  const match = dataString.match(/^(\d{4})-(\d{2})-(\d{2})(?:T|\s)?(\d{2})?:?(\d{2})?/);
+  if (match) {
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    const day = parseInt(match[3], 10);
+    const hour = match[4] ? parseInt(match[4], 10) : 12; // 12h se não tiver hora
+    const minute = match[5] ? parseInt(match[5], 10) : 0;
+    
+    return new Date(year, month, day, hour, minute);
+  }
+  return new Date(dataString);
 }
 
 /**
