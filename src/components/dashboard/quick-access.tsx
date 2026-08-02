@@ -62,9 +62,11 @@ export function QuickAccess({ familiares }: QuickAccessProps) {
           Acesso Rápido — Familiares
         </CardTitle>
         <CardAction>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            <Link href="/familiares/novo">Adicionar</Link>
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 px-2 sm:px-3" asChild>
+            <Link href="/familiares/novo">
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Adicionar</span>
+            </Link>
           </Button>
         </CardAction>
       </CardHeader>

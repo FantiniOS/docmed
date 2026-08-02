@@ -87,9 +87,9 @@ export default async function DashboardPage() {
       <SmartAlerts consultas={data.consultas} exames={data.exames} />
 
       {/* Content Grid — Calendário + Acesso Rápido */}
-      <div className="grid lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid lg:grid-cols-5 gap-3 sm:gap-4 min-w-0">
         {/* Calendário — ocupa 3 colunas no desktop */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 min-w-0">
           <DashboardCalendar
             consultas={data.consultas}
             exames={data.exames}
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Acesso Rápido — ocupa 2 colunas no desktop */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           <QuickAccess familiares={data.familiares} />
         </div>
       </div>

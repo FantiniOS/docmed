@@ -217,12 +217,12 @@ export function DashboardCalendar({
           </CardTitle>
 
           {/* Navegação */}
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-0.5 sm:gap-1 ml-auto">
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={handleToday}
-              className="text-xs h-7 w-auto px-2 text-muted-foreground hover:text-foreground"
+              className="text-[10px] sm:text-xs h-7 w-auto px-1.5 sm:px-2 text-muted-foreground hover:text-foreground"
             >
               Hoje
             </Button>
@@ -231,11 +231,12 @@ export function DashboardCalendar({
               size="icon-sm"
               onClick={handlePrevMonth}
               aria-label="Mês anterior"
+              className="h-7 w-7 sm:h-8 sm:w-8"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
             <span
-              className="text-xs sm:text-sm font-medium min-w-[90px] sm:min-w-[120px] text-center capitalize"
+              className="text-[11px] sm:text-sm font-medium min-w-[75px] sm:min-w-[120px] text-center capitalize"
               suppressHydrationWarning
             >
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
@@ -245,8 +246,9 @@ export function DashboardCalendar({
               size="icon-sm"
               onClick={handleNextMonth}
               aria-label="Próximo mês"
+              className="h-7 w-7 sm:h-8 sm:w-8"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </CardHeader>
