@@ -361,14 +361,14 @@ export function DashboardCalendar({
                                 }`}
                               />
                               <span className="font-bold truncate">
-                                {event.paciente || "Familiar não informado"}
+                                {event.paciente ? event.paciente.split(' ').slice(0, 2).join(' ') : "Familiar não informado"}
                               </span>
                               <span className="text-muted-foreground ml-auto text-[10px] shrink-0">
                                 {event.hora}
                               </span>
                             </div>
                             <span className="text-muted-foreground truncate ml-3">
-                              {event.title}
+                              {event.type === 'consulta' ? (event.medico || event.title) : event.title}
                             </span>
                           </div>
                         ))}
