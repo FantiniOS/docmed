@@ -5,13 +5,13 @@ import { Sparkles, Loader2, Copy, Check, FileDown, Activity } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
-import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
+import type { Paciente, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 import { BodyMap } from "@/components/paciente/body-map";
 import ReactMarkdown from 'react-markdown';
 import { gerarPDFProfissional } from "@/lib/pdf-generator";
 
 interface ResumoClinicoSecaoProps {
-  paciente: Familiar;
+  paciente: Paciente;
   exames: ExameComRelacionamentos[];
   evolucao: RelatorioComRelacionamentos[];
 }

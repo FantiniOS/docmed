@@ -36,17 +36,17 @@ import {
   type ExameSchemaType,
   tiposExames,
 } from "@/lib/validations/exame";
-import type { Familiar, Medico } from "@/types/database";
+import type { Paciente, Medico } from "@/types/database";
 
 interface ExameFormProps {
-  familiares: Familiar[];
+  pacientes: Paciente[];
   medicos: Medico[];
   initialData?: ExameSchemaType & { id?: string };
   /** Data pré-preenchida vinda do calendário do Dashboard (formato date ou datetime-local). */
   defaultDate?: string;
 }
 
-export function ExameForm({ familiares, medicos, initialData, defaultDate }: ExameFormProps) {
+export function ExameForm({ pacientes, medicos, initialData, defaultDate }: ExameFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
   } = useForm<ExameSchemaType>({
     resolver: zodResolver(exameSchema),
     defaultValues: initialData || {
-      familiar_id: "",
+      paciente_id: "",
       medico_id: null,
       nome_exame: "",
       tipo_exame: null,
@@ -216,14 +216,14 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
-            {/* Familiar */}
+            {/* Paciente */}
             <div className="space-y-2">
               <Label>
-                Familiar <span className="text-destructive">*</span>
+                Paciente <span className="text-destructive">*</span>
               </Label>
               <Controller
                 control={control}
-                name="familiar_id"
+                name="paciente_id"
                 render={({ field }) => (
                   <div>
                     <Select
@@ -232,23 +232,23 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
                     >
                       <SelectTrigger
                         className="w-full"
-                        aria-invalid={!!errors.familiar_id}
+                        aria-invalid={!!errors.paciente_id}
                       >
-                        <SelectValue placeholder="Selecione o familiar">
-                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
+                        <SelectValue placeholder="Selecione o paciente">
+                          {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {familiares.map((fam) => (
+                        {pacientes.map((fam) => (
                           <SelectItem key={fam.id} value={fam.id}>
                             {fam.nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.familiar_id && (
+                    {errors.paciente_id && (
                       <p className="text-xs text-destructive mt-1">
-                        {errors.familiar_id.message}
+                        {errors.paciente_id.message}
                       </p>
                     )}
                   </div>

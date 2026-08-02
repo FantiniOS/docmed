@@ -3,14 +3,14 @@ import { SmartAlerts } from "@/components/dashboard/smart-alerts";
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { QuickAccess } from "@/components/dashboard/quick-access";
 import type {
-  Familiar,
+  Paciente,
   ConsultaComRelacionamentos,
   ExameComRelacionamentos,
 } from "@/types/database";
 
 /**
  * Busca os dados necessários para o Dashboard refatorado:
- * - Familiares (para Acesso Rápido)
+ * - Pacientes (para Acesso Rápido)
  * - Todas as consultas futuras (para calendário + smart cards)
  * - Todos os exames futuros (para calendário + smart cards)
  *
@@ -19,28 +19,28 @@ import type {
 async function getDashboardData() {
   const supabase = await createServerSupabaseClient();
 
-  const [familiaresResult, consultasResult, examesResult] = await Promise.all([
-    // Todos os familiares (para acesso rápido)
+  const [pacientesResult, consultasResult, examesResult] = await Promise.all([
+    // Todos os pacientes (para acesso rápido)
     supabase
-      .from("familiares")
+      .from("pacientes")
       .select("*")
       .order("nome", { ascending: true }),
 
     // Consultas completas (histórico incluído para o calendário)
     supabase
       .from("consultas")
-      .select("*, familiares(*), medicos(*)")
+      .select("*, pacientes(*), medicos(*)")
       .order("data_consulta", { ascending: true }),
 
     // Exames completos (histórico incluído para o calendário)
     supabase
       .from("exames")
-      .select("*, familiares(*), medicos(*)")
+      .select("*, pacientes(*), medicos(*)")
       .order("data_exame", { ascending: true }),
   ]);
 
   return {
-    familiares: (familiaresResult.data as Familiar[]) ?? [],
+    pacientes: (pacientesResult.data as Paciente[]) ?? [],
     consultas:
       (consultasResult.data as ConsultaComRelacionamentos[]) ?? [],
     exames:
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   } catch {
     // Se o Supabase não estiver configurado, renderizar com dados vazios
     data = {
-      familiares: [],
+      pacientes: [],
       consultas: [],
       exames: [],
     };
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
           Início
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Sua agenda médica familiar em um só lugar
+          Sua agenda médica paciente em um só lugar
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
 
         {/* Acesso Rápido — ocupa 2 colunas no desktop */}
         <div className="lg:col-span-2 min-w-0">
-          <QuickAccess familiares={data.familiares} />
+          <QuickAccess pacientes={data.pacientes} />
         </div>
       </div>
     </div>

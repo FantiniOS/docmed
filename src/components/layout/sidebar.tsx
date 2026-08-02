@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Início", href: "/", icon: LayoutDashboard },
-  { label: "Familiares", href: "/familiares", icon: Users },
+  { label: "Pacientes", href: "/pacientes", icon: Users },
   { label: "Médicos", href: "/medicos", icon: Stethoscope },
   { label: "Consultas", href: "/consultas", icon: CalendarCheck },
   { label: "Exames", href: "/exames", icon: FileText },
@@ -37,7 +37,7 @@ export function Sidebar() {
               DOCMED
             </span>
             <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              Prontuário Familiar
+              Prontuário Paciente
             </span>
           </div>
         </Link>

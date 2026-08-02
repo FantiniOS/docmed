@@ -11,14 +11,14 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "DOCMED — Prontuário Médico Familiar",
+    default: "DOCMED — Prontuário Médico Paciente",
     template: "%s | DOCMED",
   },
   description:
-    "Sistema de prontuário médico familiar. Acesse informações de saúde da sua família de forma rápida e segura — ideal para consultórios e emergências.",
+    "Sistema de prontuário médico paciente. Acesse informações de saúde da sua família de forma rápida e segura — ideal para consultórios e emergências.",
   keywords: [
     "prontuário médico",
-    "saúde familiar",
+    "saúde paciente",
     "exames médicos",
     "consultas",
     "emergência",

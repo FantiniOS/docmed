@@ -54,7 +54,7 @@ export default async function ConsultasPage({
   // Para MVP, vamos trazer as consultas ordenadas.
   let query = supabase
     .from("consultas")
-    .select("*, familiares(*), medicos(*)")
+    .select("*, pacientes(*), medicos(*)")
     .order("data_consulta", { ascending: false });
 
   const { data: consultas, error } = await query;
@@ -67,7 +67,7 @@ export default async function ConsultasPage({
     list = list.filter(
       (c) =>
         c.motivo?.toLowerCase().includes(termo) ||
-        c.familiares?.nome?.toLowerCase().includes(termo) ||
+        c.pacientes?.nome?.toLowerCase().includes(termo) ||
         c.medicos?.nome?.toLowerCase().includes(termo) ||
         c.local_atendimento?.toLowerCase().includes(termo)
     );
@@ -100,7 +100,7 @@ export default async function ConsultasPage({
           <Input
             name="q"
             defaultValue={q}
-            placeholder="Buscar por familiar, médico ou motivo..."
+            placeholder="Buscar por paciente, médico ou motivo..."
             className="pl-9 h-9"
           />
         </form>
@@ -178,15 +178,15 @@ export default async function ConsultasPage({
                       
                       <div className="grid sm:grid-cols-2 gap-2 mt-2">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          {consulta.familiares?.foto_url ? (
+                          {consulta.pacientes?.foto_url ? (
                             <Avatar className="w-5 h-5 border border-border">
-                              <AvatarImage src={consulta.familiares.foto_url} alt="Familiar" className="object-cover" />
-                              <AvatarFallback className="text-[10px] bg-emerald-500/10 text-emerald-500">{consulta.familiares.nome[0].toUpperCase()}</AvatarFallback>
+                              <AvatarImage src={consulta.pacientes.foto_url} alt="Paciente" className="object-cover" />
+                              <AvatarFallback className="text-[10px] bg-emerald-500/10 text-emerald-500">{consulta.pacientes.nome[0].toUpperCase()}</AvatarFallback>
                             </Avatar>
                           ) : (
                             <User className="w-4 h-4 shrink-0 text-emerald-500" />
                           )}
-                          <span className="truncate">{consulta.familiares?.nome || "Familiar"}</span>
+                          <span className="truncate">{consulta.pacientes?.nome || "Paciente"}</span>
                         </div>
                         
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">

@@ -22,7 +22,7 @@ export function ExamTable({ exames }: ExamTableProps) {
   if (!exames || exames.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground border rounded-lg bg-card/50">
-        Nenhum exame cadastrado para este familiar.
+        Nenhum exame cadastrado para este paciente.
       </div>
     );
   }

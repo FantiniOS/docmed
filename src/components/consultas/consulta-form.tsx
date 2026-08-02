@@ -39,18 +39,18 @@ import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import { consultaSchema, type ConsultaSchemaType, tiposConsulta } from "@/lib/validations/consulta";
 import { especialidades } from "@/lib/validations/medico";
-import type { Familiar, Medico } from "@/types/database";
+import type { Paciente, Medico } from "@/types/database";
 import { PatientHistoryTimeline } from "./patient-history-timeline";
 
 interface ConsultaFormProps {
-  familiares: Familiar[];
+  pacientes: Paciente[];
   medicos: Medico[];
   initialData?: ConsultaSchemaType & { id?: string };
   /** Data pré-preenchida vinda do calendário do Dashboard (formato datetime-local). */
   defaultDate?: string;
 }
 
-export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: ConsultaFormProps) {
+export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: ConsultaFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
   } = useForm<ConsultaSchemaType>({
     resolver: zodResolver(consultaSchema),
     defaultValues: initialData || {
-      familiar_id: "",
+      paciente_id: "",
       medico_id: "",
       data_consulta: defaultDate || "",
       motivo: null,
@@ -75,7 +75,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
     },
   });
 
-  const selectedFamiliarId = useWatch({ control, name: "familiar_id" });
+  const selectedPacienteId = useWatch({ control, name: "paciente_id" });
   const selectedMedicoId = useWatch({ control, name: "medico_id" });
   const selectedEspecialidade = useWatch({ control, name: "especialidade" });
   const isEditing = !!initialData?.id;
@@ -142,7 +142,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
                   <SheetTitle>Histórico do Paciente</SheetTitle>
                 </SheetHeader>
                 <PatientHistoryTimeline
-                  familiarId={selectedFamiliarId}
+                  pacienteId={selectedPacienteId}
                   currentConsultaId={initialData?.id}
                   medicoId={selectedMedicoId === "none" ? null : selectedMedicoId}
                   especialidade={selectedEspecialidade}
@@ -162,30 +162,30 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
-                Familiar <span className="text-destructive">*</span>
+                Paciente <span className="text-destructive">*</span>
               </Label>
               <Controller
                 control={control}
-                name="familiar_id"
+                name="paciente_id"
                 render={({ field }) => (
                   <div>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full" aria-invalid={!!errors.familiar_id}>
-                        <SelectValue placeholder="Selecione o familiar">
-                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
+                      <SelectTrigger className="w-full" aria-invalid={!!errors.paciente_id}>
+                        <SelectValue placeholder="Selecione o paciente">
+                          {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {familiares.map((fam) => (
+                        {pacientes.map((fam) => (
                           <SelectItem key={fam.id} value={fam.id}>
                             {fam.nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.familiar_id && (
+                    {errors.paciente_id && (
                       <p className="text-xs text-destructive mt-1">
-                        {errors.familiar_id.message}
+                        {errors.paciente_id.message}
                       </p>
                     )}
                   </div>
@@ -389,7 +389,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
       {/* Coluna Direita: Timeline de Histórico (Visível apenas em Desktop) */}
       <div className="hidden lg:block lg:col-span-1 sticky top-24 h-[calc(100vh-8rem)]">
         <PatientHistoryTimeline
-          familiarId={selectedFamiliarId}
+          pacienteId={selectedPacienteId}
           currentConsultaId={initialData?.id}
         />
       </div>

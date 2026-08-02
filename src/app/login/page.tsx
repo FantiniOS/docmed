@@ -71,7 +71,7 @@ export default function LoginPage() {
                 DOCMED <HeartPulse className="w-5 h-5 text-rose-500" />
               </h1>
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
-                Prontuário Familiar
+                Prontuário Paciente
               </p>
             </div>
           </div>

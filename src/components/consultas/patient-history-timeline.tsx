@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface PatientHistoryTimelineProps {
-  familiarId: string;
+  pacienteId: string;
   currentConsultaId?: string;
   medicoId?: string | null;
   especialidade?: string | null;
@@ -27,7 +27,7 @@ type TimelineEvent = {
 };
 
 export function PatientHistoryTimeline({
-  familiarId,
+  pacienteId,
   currentConsultaId,
   medicoId,
   especialidade,
@@ -38,7 +38,7 @@ export function PatientHistoryTimeline({
 
   useEffect(() => {
     async function fetchHistory() {
-      if (!familiarId) {
+      if (!pacienteId) {
         setEvents([]);
         return;
       }
@@ -50,7 +50,7 @@ export function PatientHistoryTimeline({
           supabase
             .from("consultas")
             .select("*, medicos(*)")
-            .eq("familiar_id", familiarId)
+            .eq("paciente_id", pacienteId)
             .order("data_consulta", { ascending: false }),
         ]);
 
@@ -107,7 +107,7 @@ export function PatientHistoryTimeline({
     }
 
     fetchHistory();
-  }, [familiarId, currentConsultaId, medicoId, especialidade]);
+  }, [pacienteId, currentConsultaId, medicoId, especialidade]);
 
   const toggleExpand = (id: string) => {
     setExpandedItems((prev) => {
@@ -118,7 +118,7 @@ export function PatientHistoryTimeline({
     });
   };
 
-  if (!familiarId) {
+  if (!pacienteId) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 rounded-xl border border-dashed border-border h-full min-h-[300px]">
         <Stethoscope className="w-8 h-8 text-muted-foreground mb-3" />

@@ -105,15 +105,15 @@ export function UpcomingConsultations({
                       )}
                     </div>
                     <div className="flex items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground flex-wrap">
-                      {consulta.familiares && (
+                      {consulta.pacientes && (
                         <span className="flex items-center gap-1.5">
                           <Avatar className="w-4 h-4 border border-border">
-                            <AvatarImage src={consulta.familiares.foto_url || undefined} alt={consulta.familiares.nome} className="object-cover" />
+                            <AvatarImage src={consulta.pacientes.foto_url || undefined} alt={consulta.pacientes.nome} className="object-cover" />
                             <AvatarFallback className="bg-emerald-500/10 text-emerald-500 text-[8px] font-medium">
-                              {consulta.familiares.nome[0].toUpperCase()}
+                              {consulta.pacientes.nome[0].toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          {formatarNome(consulta.familiares.nome)}
+                          {formatarNome(consulta.pacientes.nome)}
                         </span>
                       )}
                       {(() => {

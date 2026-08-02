@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 /**
- * Schema de validação para o formulário de cadastro de familiar.
+ * Schema de validação para o formulário de cadastro de paciente.
  * Usado com react-hook-form via @hookform/resolvers/zod.
  */
-export const familiarSchema = z.object({
+export const pacienteSchema = z.object({
   nome: z
     .string()
     .min(2, "Nome deve ter pelo menos 2 caracteres")
@@ -34,7 +34,7 @@ export const familiarSchema = z.object({
   foto_url: z.string().nullable().optional(),
 });
 
-export type FamiliarSchemaType = z.infer<typeof familiarSchema>;
+export type PacienteSchemaType = z.infer<typeof pacienteSchema>;
 
 /**
  * Opções de tipo sanguíneo para o select.

@@ -10,10 +10,10 @@ export default async function EditarExamePage({
   const { id } = await params;
   const supabase = await createServerSupabaseClient();
 
-  // Buscar o exame, além das listas de familiares e médicos para os selects
-  const [exameRes, familiaresRes, medicosRes] = await Promise.all([
+  // Buscar o exame, além das listas de pacientes e médicos para os selects
+  const [exameRes, pacientesRes, medicosRes] = await Promise.all([
     supabase.from("exames").select("*").eq("id", id).single(),
-    supabase.from("familiares").select("*").order("nome", { ascending: true }),
+    supabase.from("pacientes").select("*").order("nome", { ascending: true }),
     supabase.from("medicos").select("*").order("nome", { ascending: true }),
   ]);
 
@@ -24,7 +24,7 @@ export default async function EditarExamePage({
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-up">
       <ExameForm
-        familiares={familiaresRes.data || []}
+        pacientes={pacientesRes.data || []}
         medicos={medicosRes.data || []}
         initialData={exameRes.data}
       />

@@ -100,15 +100,15 @@ export function RecentExams({ exames }: RecentExamsProps) {
                     )}
                   </div>
                   <div className="flex items-center gap-x-3 gap-y-1 mt-0.5 text-xs text-muted-foreground flex-wrap">
-                    {exame.familiares && (
+                    {exame.pacientes && (
                       <span className="flex items-center gap-1.5">
                         <Avatar className="w-4 h-4 border border-border">
-                          <AvatarImage src={exame.familiares.foto_url || undefined} alt={exame.familiares.nome} className="object-cover" />
+                          <AvatarImage src={exame.pacientes.foto_url || undefined} alt={exame.pacientes.nome} className="object-cover" />
                           <AvatarFallback className="bg-amber-500/10 text-amber-500 text-[8px] font-medium">
-                            {exame.familiares.nome[0].toUpperCase()}
+                            {exame.pacientes.nome[0].toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        {formatarNome(exame.familiares.nome)}
+                        {formatarNome(exame.pacientes.nome)}
                       </span>
                     )}
                     <span className="flex items-center gap-1" suppressHydrationWarning>

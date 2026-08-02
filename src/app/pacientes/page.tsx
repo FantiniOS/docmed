@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Familiar } from "@/types/database";
+import type { Paciente } from "@/types/database";
 
 /**
  * Cores de avatar por índice para variar visualmente.
@@ -45,7 +45,7 @@ function calcularIdade(dataNascimento: string): number {
   return idade;
 }
 
-export default async function FamiliaresPage({
+export default async function PacientesPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
@@ -53,14 +53,14 @@ export default async function FamiliaresPage({
   const supabase = await createServerSupabaseClient();
   const { q } = await searchParams;
 
-  let query = supabase.from("familiares").select("*").order("nome", { ascending: true });
+  let query = supabase.from("pacientes").select("*").order("nome", { ascending: true });
 
   if (q) {
     query = query.ilike("nome", `%${q}%`);
   }
 
-  const { data: familiares, error } = await query;
-  const list = familiares as Familiar[] || [];
+  const { data: pacientes, error } = await query;
+  const list = pacientes as Paciente[] || [];
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -68,18 +68,18 @@ export default async function FamiliaresPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Users className="w-6 h-6 text-emerald-500" />
-            Familiares
+            Pacientes
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gerencie os membros da sua família cadastrados.
           </p>
         </div>
         <Link
-          href="/familiares/novo"
+          href="/pacientes/novo"
           className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
-          Adicionar Familiar
+          Adicionar Paciente
         </Link>
       </div>
 
@@ -103,7 +103,7 @@ export default async function FamiliaresPage({
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">
-                Nenhum familiar encontrado
+                Nenhum paciente encontrado
               </p>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm">
                 {q ? "Não foram encontrados resultados para a sua busca." : "Comece adicionando os membros da sua família para acompanhamento médico."}
@@ -111,7 +111,7 @@ export default async function FamiliaresPage({
             </div>
             {!q && (
               <Link
-                href="/familiares/novo"
+                href="/pacientes/novo"
                 className="mt-2 inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" /> Cadastrar
@@ -121,36 +121,36 @@ export default async function FamiliaresPage({
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {list.map((familiar, index) => (
-            <Link key={familiar.id} href={`/familiares/${familiar.id}`}>
+          {list.map((paciente, index) => (
+            <Link key={paciente.id} href={`/pacientes/${paciente.id}`}>
               <Card className="group transition-all duration-200 hover:shadow-md hover:border-emerald-500/30">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-3">
                     <Avatar className={`w-9 h-9 shadow-sm bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
-                      <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
+                      <AvatarImage src={paciente.foto_url || undefined} alt={paciente.nome} className="object-cover" />
                       <AvatarFallback className="bg-transparent text-white text-sm font-semibold">
-                        {getIniciais(familiar.nome)}
+                        {getIniciais(paciente.nome)}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold truncate text-foreground group-hover:text-emerald-500 transition-colors">
-                        {familiar.nome}
+                        {paciente.nome}
                       </h3>
                       
                       <div className="flex flex-wrap gap-2 mt-2">
                         <span className="text-xs text-muted-foreground">
-                          {calcularIdade(familiar.data_nascimento)} anos
+                          {calcularIdade(paciente.data_nascimento)} anos
                         </span>
                         
-                        {familiar.tipo_sanguineo && (
+                        {paciente.tipo_sanguineo && (
                           <Badge variant="outline" className="h-4.5 px-1.5 text-[10px] gap-1">
                             <Droplets className="w-2.5 h-2.5 text-red-400" />
-                            {familiar.tipo_sanguineo}
+                            {paciente.tipo_sanguineo}
                           </Badge>
                         )}
                         
-                        {familiar.alergias && (
+                        {paciente.alergias && (
                           <span className="flex items-center gap-1 text-[10px] text-amber-500">
                             <AlertTriangle className="w-2.5 h-2.5" />
                             Alergias

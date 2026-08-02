@@ -33,15 +33,15 @@ import {
   relatorioSchema,
   type RelatorioSchemaType,
 } from "@/lib/validations/relatorio";
-import type { Familiar, Medico } from "@/types/database";
+import type { Paciente, Medico } from "@/types/database";
 
 interface RelatorioFormProps {
-  familiares: Familiar[];
+  pacientes: Paciente[];
   medicos: Medico[];
   initialData?: RelatorioSchemaType & { id?: string };
 }
 
-export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFormProps) {
+export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
   } = useForm<RelatorioSchemaType>({
     resolver: zodResolver(relatorioSchema),
     defaultValues: initialData || {
-      familiar_id: "",
+      paciente_id: "",
       medico_id: null,
       titulo: "",
       data_relatorio: "",
@@ -109,9 +109,9 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
         toast.add({ title: "Sucesso!", description: "Relatório cadastrado.", type: "success" });
       }
 
-      // Se veio de um familiar específico, podemos voltar para a página dele,
+      // Se veio de um paciente específico, podemos voltar para a página dele,
       // senão, volta para exames
-      router.push(data.familiar_id ? `/exames/familiar/${data.familiar_id}` : `/exames`);
+      router.push(data.paciente_id ? `/exames/paciente/${data.paciente_id}` : `/exames`);
       router.refresh();
     } catch (err: any) {
       setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
@@ -123,7 +123,7 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Link
-        href={initialData?.familiar_id ? `/exames/familiar/${initialData.familiar_id}` : `/exames`}
+        href={initialData?.paciente_id ? `/exames/paciente/${initialData.paciente_id}` : `/exames`}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -149,14 +149,14 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
-            {/* Familiar */}
+            {/* Paciente */}
             <div className="space-y-2">
               <Label>
-                Familiar <span className="text-destructive">*</span>
+                Paciente <span className="text-destructive">*</span>
               </Label>
               <Controller
                 control={control}
-                name="familiar_id"
+                name="paciente_id"
                 render={({ field }) => (
                   <div>
                     <Select
@@ -165,23 +165,23 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
                     >
                       <SelectTrigger
                         className="w-full"
-                        aria-invalid={!!errors.familiar_id}
+                        aria-invalid={!!errors.paciente_id}
                       >
-                        <SelectValue placeholder="Selecione o familiar">
-                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
+                        <SelectValue placeholder="Selecione o paciente">
+                          {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {familiares.map((fam) => (
+                        {pacientes.map((fam) => (
                           <SelectItem key={fam.id} value={fam.id}>
                             {fam.nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.familiar_id && (
+                    {errors.paciente_id && (
                       <p className="text-xs text-destructive mt-1">
-                        {errors.familiar_id.message}
+                        {errors.paciente_id.message}
                       </p>
                     )}
                   </div>
@@ -330,7 +330,7 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
 
       <div className="flex justify-end gap-3">
         <Link
-          href={initialData?.familiar_id ? `/exames/familiar/${initialData.familiar_id}` : `/exames`}
+          href={initialData?.paciente_id ? `/exames/paciente/${initialData.paciente_id}` : `/exames`}
           className="inline-flex items-center justify-center h-9 px-4 rounded-lg border border-input bg-transparent text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           Cancelar

@@ -17,11 +17,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ResumoClinicoBotao } from "@/components/familiares/resumo-clinico-botao";
-import { FamiliarTabs } from "@/components/familiares/familiar-tabs";
-import type { Familiar, ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
+import { ResumoClinicoBotao } from "@/components/pacientes/resumo-clinico-botao";
+import { PacienteTabs } from "@/components/pacientes/paciente-tabs";
+import type { Paciente, ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
-interface FamiliarPageProps {
+interface PacientePageProps {
   params: Promise<{ id: string }>;
 }
 
@@ -51,81 +51,81 @@ function formatarData(dataString: string): string {
 }
 
 /**
- * Busca os dados do familiar e seus exames.
+ * Busca os dados do paciente e seus exames.
  */
-async function getFamiliarData(id: string) {
+async function getPacienteData(id: string) {
   const supabase = await createServerSupabaseClient();
 
-  const [familiarResult, consultasResult, examesResult, relatoriosResult] = await Promise.all([
-    supabase.from("familiares").select("*").eq("id", id).single(),
+  const [pacienteResult, consultasResult, examesResult, relatoriosResult] = await Promise.all([
+    supabase.from("pacientes").select("*").eq("id", id).single(),
     supabase
       .from("consultas")
       .select("*, medicos(*)")
-      .eq("familiar_id", id)
+      .eq("paciente_id", id)
       .order("data_consulta", { ascending: false })
       .limit(10),
     supabase
       .from("exames")
       .select("*, medicos(*)")
-      .eq("familiar_id", id)
+      .eq("paciente_id", id)
       .order("data_exame", { ascending: false })
       .limit(10),
     supabase
       .from("relatorios")
       .select("*, medicos(*)")
-      .eq("familiar_id", id)
+      .eq("paciente_id", id)
       .order("data_relatorio", { ascending: false })
       .limit(10),
   ]);
 
   return {
-    familiar: familiarResult.data as Familiar | null,
+    paciente: pacienteResult.data as Paciente | null,
     consultas: (consultasResult.data as ConsultaComRelacionamentos[]) ?? [],
     exames: (examesResult.data as ExameComRelacionamentos[]) ?? [],
     relatorios: (relatoriosResult.data as RelatorioComRelacionamentos[]) ?? [],
   };
 }
 
-export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) {
+export default async function PacientePerfilPage({ params }: PacientePageProps) {
   const { id } = await params;
 
   let data;
   try {
-    data = await getFamiliarData(id);
+    data = await getPacienteData(id);
   } catch {
     notFound();
   }
 
-  if (!data.familiar) {
+  if (!data.paciente) {
     notFound();
   }
 
-  const { familiar, consultas, exames, relatorios } = data;
-  const idade = calcularIdade(familiar.data_nascimento);
+  const { paciente, consultas, exames, relatorios } = data;
+  const idade = calcularIdade(paciente.data_nascimento);
   const splitTags = (str: string | null | undefined) =>
     str
       ?.split(/[\n,;]+/)
       .map((s) => s.trim())
       .filter(Boolean);
 
-  const alergias = splitTags(familiar.alergias);
-  const doencas = splitTags(familiar.doencas_cronicas);
-  const medicamentos = splitTags(familiar.medicamentos_uso_continuo);
+  const alergias = splitTags(paciente.alergias);
+  const doencas = splitTags(paciente.doencas_cronicas);
+  const medicamentos = splitTags(paciente.medicamentos_uso_continuo);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
       {/* Back link and Edit link */}
       <div className="flex items-center justify-between">
         <Link
-          href="/familiares"
+          href="/pacientes"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Voltar para Familiares
+          Voltar para Pacientes
         </Link>
         <div className="flex items-center gap-2">
           <Link
-            href={`/familiares/${familiar.id}/editar`}
+            href={`/pacientes/${paciente.id}/editar`}
             className="inline-flex items-center justify-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 transition-colors bg-blue-500/10 px-3 h-9 rounded-md font-medium"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -137,9 +137,9 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
       {/* Cabeçalho do Perfil */}
       <div className="flex items-start gap-4">
         <Avatar className="w-16 h-16 rounded-2xl shadow-lg shadow-emerald-500/20 shrink-0 bg-gradient-to-br from-emerald-500 to-teal-600">
-          <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
+          <AvatarImage src={paciente.foto_url || undefined} alt={paciente.nome} className="object-cover" />
           <AvatarFallback className="bg-transparent text-white text-xl font-bold rounded-2xl">
-            {familiar.nome
+            {paciente.nome
               .split(" ")
               .filter(Boolean)
               .map((n) => n[0])
@@ -150,16 +150,16 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
         </Avatar>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold tracking-tight truncate">
-            {familiar.nome}
+            {paciente.nome}
           </h1>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             <span className="text-sm text-muted-foreground" suppressHydrationWarning>
-              {idade} anos • {formatarData(familiar.data_nascimento)}
+              {idade} anos • {formatarData(paciente.data_nascimento)}
             </span>
-            {familiar.tipo_sanguineo && (
+            {paciente.tipo_sanguineo && (
               <Badge variant="outline" className="gap-1">
                 <Droplets className="w-3 h-3 text-red-400" />
-                {familiar.tipo_sanguineo}
+                {paciente.tipo_sanguineo}
               </Badge>
             )}
           </div>
@@ -271,10 +271,10 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
       <Separator />
       
       {/* Triagem IA e Mapeamento Corporal */}
-      <ResumoClinicoBotao paciente={familiar} exames={exames} evolucao={relatorios} />
+      <ResumoClinicoBotao paciente={paciente} exames={exames} evolucao={relatorios} />
 
       {/* Navegação por Abas e Conteúdo Dinâmico */}
-      <FamiliarTabs consultas={consultas} exames={exames} relatorios={relatorios} />
+      <PacienteTabs consultas={consultas} exames={exames} relatorios={relatorios} />
     </div>
   );
 }

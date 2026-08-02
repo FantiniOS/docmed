@@ -20,8 +20,8 @@ export const navItems: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
-    label: 'Familiares',
-    href: '/familiares',
+    label: 'Pacientes',
+    href: '/pacientes',
     icon: Users,
   },
   {

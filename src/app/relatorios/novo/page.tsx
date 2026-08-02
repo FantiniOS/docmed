@@ -1,30 +1,30 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { RelatorioForm } from "@/components/relatorios/relatorio-form";
-import type { Familiar, Medico } from "@/types/database";
+import type { Paciente, Medico } from "@/types/database";
 
 export default async function NovoRelatorioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ familiarId?: string }>;
+  searchParams: Promise<{ pacienteId?: string }>;
 }) {
   const supabase = await createServerSupabaseClient();
-  const { familiarId } = await searchParams;
+  const { pacienteId } = await searchParams;
 
-  const [familiaresRes, medicosRes] = await Promise.all([
-    supabase.from("familiares").select("*").order("nome"),
+  const [pacientesRes, medicosRes] = await Promise.all([
+    supabase.from("pacientes").select("*").order("nome"),
     supabase.from("medicos").select("*").order("nome"),
   ]);
 
-  const familiares = (familiaresRes.data as Familiar[]) || [];
+  const pacientes = (pacientesRes.data as Paciente[]) || [];
   const medicos = (medicosRes.data as Medico[]) || [];
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-up">
       <RelatorioForm 
-        familiares={familiares} 
+        pacientes={pacientes} 
         medicos={medicos} 
-        initialData={familiarId ? {
-          familiar_id: familiarId,
+        initialData={pacienteId ? {
+          paciente_id: pacienteId,
           titulo: "",
           data_relatorio: "",
           medico_id: null,

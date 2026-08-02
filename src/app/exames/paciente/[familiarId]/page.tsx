@@ -6,47 +6,47 @@ import { ExamTable } from "@/components/exames/exam-table";
 import { RelatorioTable } from "@/components/relatorios/relatorio-table";
 import { notFound } from "next/navigation";
 
-interface ExamesFamiliarPageProps {
+interface ExamesPacientePageProps {
   params: Promise<{
-    familiarId: string;
+    pacienteId: string;
   }>;
 }
 
-export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageProps) {
-  const { familiarId } = await params;
+export default async function ExamesPacientePage({ params }: ExamesPacientePageProps) {
+  const { pacienteId } = await params;
   const supabase = await createServerSupabaseClient();
 
-  // Buscar os detalhes do familiar
-  const { data: familiar, error: familiarError } = await supabase
-    .from("familiares")
+  // Buscar os detalhes do paciente
+  const { data: paciente, error: pacienteError } = await supabase
+    .from("pacientes")
     .select("nome")
-    .eq("id", familiarId)
+    .eq("id", pacienteId)
     .single();
 
-  if (familiarError || !familiar) {
-    // Se o familiar não existir ou for ID inválido, retorna erro 404
+  if (pacienteError || !paciente) {
+    // Se o paciente não existir ou for ID inválido, retorna erro 404
     notFound();
   }
 
-  // Buscar os exames e relatórios do familiar em paralelo
+  // Buscar os exames e relatórios do paciente em paralelo
   const [examesResponse, relatoriosResponse] = await Promise.all([
     supabase
       .from("exames")
       .select("*, medicos(nome)")
-      .eq("familiar_id", familiarId)
+      .eq("paciente_id", pacienteId)
       .order("data_exame", { ascending: false }),
     supabase
       .from("relatorios")
       .select("*, medicos(nome)")
-      .eq("familiar_id", familiarId)
+      .eq("paciente_id", pacienteId)
       .order("data_relatorio", { ascending: false })
   ]);
 
   const { data: exames, error: examesError } = examesResponse;
   const { data: relatorios, error: relatoriosError } = relatoriosResponse;
 
-  if (examesError) console.error("Erro ao buscar exames do familiar:", examesError);
-  if (relatoriosError) console.error("Erro ao buscar relatórios do familiar:", relatoriosError);
+  if (examesError) console.error("Erro ao buscar exames do paciente:", examesError);
+  if (relatoriosError) console.error("Erro ao buscar relatórios do paciente:", relatoriosError);
 
   return (
     <div className="animate-fade-in-up space-y-4">
@@ -61,10 +61,10 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <FileText className="w-6 h-6 text-emerald-500" />
-          <h1 className="text-2xl font-bold tracking-tight">Documentos de {familiar.nome}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Documentos de {paciente.nome}</h1>
         </div>
         <Link
-          href={`/exames/novo`} // Idealmente poderia preencher o ID do familiar, mas na rota genérica basta
+          href={`/exames/novo`} // Idealmente poderia preencher o ID do paciente, mas na rota genérica basta
           className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-md text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />
@@ -86,7 +86,7 @@ export default async function ExamesFamiliarPage({ params }: ExamesFamiliarPageP
           <h2 className="text-xl font-bold tracking-tight text-foreground">Relatórios e Laudos</h2>
         </div>
         <Link
-          href={`/relatorios/novo?familiarId=${familiarId}`}
+          href={`/relatorios/novo?pacienteId=${pacienteId}`}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-md text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />

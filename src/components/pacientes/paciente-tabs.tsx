@@ -10,13 +10,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
-interface FamiliarTabsProps {
+interface PacienteTabsProps {
   consultas: ConsultaComRelacionamentos[];
   exames: ExameComRelacionamentos[];
   relatorios: RelatorioComRelacionamentos[];
 }
 
-export function FamiliarTabs({ consultas, exames, relatorios }: FamiliarTabsProps) {
+export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProps) {
   const router = useRouter();
   const [activeView, setActiveView] = useState<"consultas" | "exames" | "laudos" | null>(null);
   const [termoBusca, setTermoBusca] = useState("");

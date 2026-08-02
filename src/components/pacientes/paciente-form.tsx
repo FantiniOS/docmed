@@ -33,12 +33,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import {
-  familiarSchema,
-  type FamiliarSchemaType,
+  pacienteSchema,
+  type PacienteSchemaType,
   tiposSanguineos,
-} from "@/lib/validations/familiar";
+} from "@/lib/validations/paciente";
 
-export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType & { id?: string } }) {
+export function PacienteForm({ initialData }: { initialData?: PacienteSchemaType & { id?: string } }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -50,8 +50,8 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<FamiliarSchemaType>({
-    resolver: zodResolver(familiarSchema),
+  } = useForm<PacienteSchemaType>({
+    resolver: zodResolver(pacienteSchema),
     defaultValues: initialData || {
       nome: "",
       data_nascimento: "",
@@ -63,7 +63,7 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
     },
   });
 
-  async function onSubmit(data: FamiliarSchemaType) {
+  async function onSubmit(data: PacienteSchemaType) {
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -97,16 +97,16 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
       const payload = { ...data, foto_url: fotoUrl };
 
       if (initialData?.id) {
-        const { error } = await supabase.from("familiares").update(payload).eq("id", initialData.id);
+        const { error } = await supabase.from("pacientes").update(payload).eq("id", initialData.id);
         if (error) throw error;
-        toast.add({ title: "Sucesso!", description: "Familiar atualizado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Paciente atualizado.", type: "success" });
       } else {
-        const { error } = await supabase.from("familiares").insert([payload]);
+        const { error } = await supabase.from("pacientes").insert([payload]);
         if (error) throw error;
-        toast.add({ title: "Sucesso!", description: "Familiar cadastrado.", type: "success" });
+        toast.add({ title: "Sucesso!", description: "Paciente cadastrado.", type: "success" });
       }
 
-      router.push("/familiares");
+      router.push("/pacientes");
       router.refresh();
     } catch (err: any) {
       setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
@@ -119,18 +119,18 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Back link */}
       <Link
-        href="/familiares"
+        href="/pacientes"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Voltar para Familiares
+        Voltar para Pacientes
       </Link>
 
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <User className="w-6 h-6 text-emerald-500" />
-          {initialData ? "Editar Familiar" : "Cadastrar Familiar"}
+          {initialData ? "Editar Paciente" : "Cadastrar Paciente"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Preencha os dados do membro da família.
@@ -311,7 +311,7 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
       {/* Submit */}
       <div className="flex justify-end gap-3">
         <Link
-          href="/familiares"
+          href="/pacientes"
           className="inline-flex items-center justify-center h-9 px-4 rounded-lg border border-input bg-transparent text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           Cancelar
@@ -322,7 +322,7 @@ export function FamiliarForm({ initialData }: { initialData?: FamiliarSchemaType
           ) : (
             <Save className="w-4 h-4" />
           )}
-          {isSubmitting ? "Salvando..." : "Salvar Familiar"}
+          {isSubmitting ? "Salvando..." : "Salvar Paciente"}
         </Button>
       </div>
     </form>
