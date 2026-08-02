@@ -33,15 +33,15 @@ import {
   relatorioSchema,
   type RelatorioSchemaType,
 } from "@/lib/validations/relatorio";
-import type { Paciente, Medico } from "@/types/database";
+import type { Familiar, Medico } from "@/types/database";
 
 interface RelatorioFormProps {
-  pacientes: Paciente[];
+  familiares: Familiar[];
   medicos: Medico[];
   initialData?: RelatorioSchemaType & { id?: string };
 }
 
-export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioFormProps) {
+export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -168,11 +168,11 @@ export function RelatorioForm({ pacientes, medicos, initialData }: RelatorioForm
                         aria-invalid={!!errors.familiar_id}
                       >
                         <SelectValue placeholder="Selecione o paciente">
-                          {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
+                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {pacientes.map((fam) => (
+                        {familiares.map((fam) => (
                           <SelectItem key={fam.id} value={fam.id}>
                             {fam.nome}
                           </SelectItem>

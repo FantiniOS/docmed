@@ -5,19 +5,19 @@ import { Sparkles, Loader2, Copy, Check, FileDown, Activity } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
-import type { Paciente, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
+import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 import { BodyMap } from "@/components/paciente/body-map";
 import ReactMarkdown from 'react-markdown';
 import { gerarPDFProfissional } from "@/lib/pdf-generator";
 
 interface ResumoClinicoSecaoProps {
-  paciente: Paciente;
+  familiar: Familiar;
   exames: ExameComRelacionamentos[];
   evolucao: RelatorioComRelacionamentos[];
 }
 
 export function ResumoClinicoBotao({
-  paciente,
+  familiar,
   exames,
   evolucao,
 }: ResumoClinicoSecaoProps) {
@@ -34,7 +34,7 @@ export function ResumoClinicoBotao({
       const response = await fetch('/api/generate-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paciente, exames, evolucao }),
+        body: JSON.stringify({ familiar, exames, evolucao }),
       });
       const data = await response.json();
       if (response.ok && data.summary) {
@@ -61,7 +61,7 @@ export function ResumoClinicoBotao({
   const handleExportPDF = async () => {
     if (!resumo) return;
     try {
-      await gerarPDFProfissional(paciente, resumo, regioesAfetadas);
+      await gerarPDFProfissional(familiar, resumo, regioesAfetadas);
       toast.add({ title: "Sucesso!", description: "PDF baixado com sucesso.", type: "success" });
     } catch (error: any) {
       console.error("Erro ao gerar PDF:", error);
@@ -80,7 +80,7 @@ export function ResumoClinicoBotao({
                 Triagem & Mapeamento por IA
               </CardTitle>
               <CardDescription className="mt-1">
-                Dossiê clínico inteligente gerado automaticamente através da análise do histórico do paciente.
+                Dossiê clínico inteligente gerado automaticamente através da análise do histórico do familiar.
               </CardDescription>
             </div>
             {!resumo && (

@@ -33,12 +33,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import {
-  pacienteSchema,
-  type PacienteSchemaType,
+  familiarSchema,
+  type FamiliarSchemaType,
   tiposSanguineos,
-} from "@/lib/validations/paciente";
+} from "@/lib/validations/familiar";
 
-export function PacienteForm({ initialData }: { initialData?: PacienteSchemaType & { id?: string } }) {
+export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType & { id?: string } }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -50,8 +50,8 @@ export function PacienteForm({ initialData }: { initialData?: PacienteSchemaType
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<PacienteSchemaType>({
-    resolver: zodResolver(pacienteSchema),
+  } = useForm<FamiliarSchemaType>({
+    resolver: zodResolver(familiarSchema),
     defaultValues: initialData || {
       nome: "",
       data_nascimento: "",
@@ -63,7 +63,7 @@ export function PacienteForm({ initialData }: { initialData?: PacienteSchemaType
     },
   });
 
-  async function onSubmit(data: PacienteSchemaType) {
+  async function onSubmit(data: FamiliarSchemaType) {
     setIsSubmitting(true);
     setSubmitError(null);
 

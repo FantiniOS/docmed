@@ -36,17 +36,17 @@ import {
   type ExameSchemaType,
   tiposExames,
 } from "@/lib/validations/exame";
-import type { Paciente, Medico } from "@/types/database";
+import type { Familiar, Medico } from "@/types/database";
 
 interface ExameFormProps {
-  pacientes: Paciente[];
+  familiares: Familiar[];
   medicos: Medico[];
   initialData?: ExameSchemaType & { id?: string };
   /** Data pré-preenchida vinda do calendário do Dashboard (formato date ou datetime-local). */
   defaultDate?: string;
 }
 
-export function ExameForm({ pacientes, medicos, initialData, defaultDate }: ExameFormProps) {
+export function ExameForm({ familiares, medicos, initialData, defaultDate }: ExameFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -235,11 +235,11 @@ export function ExameForm({ pacientes, medicos, initialData, defaultDate }: Exam
                         aria-invalid={!!errors.familiar_id}
                       >
                         <SelectValue placeholder="Selecione o paciente">
-                          {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
+                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {pacientes.map((fam) => (
+                        {familiares.map((fam) => (
                           <SelectItem key={fam.id} value={fam.id}>
                             {fam.nome}
                           </SelectItem>

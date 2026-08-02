@@ -3,7 +3,7 @@ import { SmartAlerts } from "@/components/dashboard/smart-alerts";
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { QuickAccess } from "@/components/dashboard/quick-access";
 import type {
-  Paciente,
+  Familiar,
   ConsultaComRelacionamentos,
   ExameComRelacionamentos,
 } from "@/types/database";
@@ -29,18 +29,18 @@ async function getDashboardData() {
     // Consultas completas (histórico incluído para o calendário)
     supabase
       .from("consultas")
-      .select("*, pacientes:familiares(*), medicos(*)")
+      .select("*, familiares(*), medicos(*)")
       .order("data_consulta", { ascending: true }),
 
     // Exames completos (histórico incluído para o calendário)
     supabase
       .from("exames")
-      .select("*, pacientes:familiares(*), medicos(*)")
+      .select("*, familiares(*), medicos(*)")
       .order("data_exame", { ascending: true }),
   ]);
 
   return {
-    pacientes: (pacientesResult.data as Paciente[]) ?? [],
+    familiares: (pacientesResult.data as Familiar[]) ?? [],
     consultas:
       (consultasResult.data as ConsultaComRelacionamentos[]) ?? [],
     exames:
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   } catch {
     // Se o Supabase não estiver configurado, renderizar com dados vazios
     data = {
-      pacientes: [],
+      familiares: [],
       consultas: [],
       exames: [],
     };
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
 
         {/* Acesso Rápido — ocupa 2 colunas no desktop */}
         <div className="lg:col-span-2 min-w-0">
-          <QuickAccess pacientes={data.pacientes} />
+          <QuickAccess familiares={data.familiares} />
         </div>
       </div>
     </div>

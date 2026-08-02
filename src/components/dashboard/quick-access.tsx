@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Paciente } from "@/types/database";
+import type { Familiar } from "@/types/database";
 
 interface QuickAccessProps {
-  pacientes: Paciente[];
+  familiares: Familiar[];
 }
 
 /**
@@ -53,7 +53,7 @@ const avatarColors = [
   "from-cyan-500 to-sky-600",
 ];
 
-export function QuickAccess({ pacientes }: QuickAccessProps) {
+export function QuickAccess({ familiares }: QuickAccessProps) {
   return (
     <Card>
       <CardHeader>
@@ -72,7 +72,7 @@ export function QuickAccess({ pacientes }: QuickAccessProps) {
       </CardHeader>
 
       <CardContent>
-        {pacientes.length === 0 ? (
+        {familiares.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 gap-3 text-center">
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
               <User className="w-6 h-6 text-muted-foreground" />
@@ -92,17 +92,17 @@ export function QuickAccess({ pacientes }: QuickAccessProps) {
           </div>
         ) : (
           <div className="grid gap-2">
-            {pacientes.map((paciente, index) => (
+            {familiares.map((familiar, index) => (
               <Link
-                key={paciente.id}
-                href={`/pacientes/${paciente.id}`}
+                key={familiar.id}
+                href={`/pacientes/${familiar.id}`}
                 className="group flex items-center gap-2.5 p-2 rounded-lg transition-all duration-200 hover:bg-accent/50"
               >
                 {/* Avatar com iniciais */}
                 <Avatar className={`w-8 h-8 shadow-sm shrink-0 bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
-                  <AvatarImage src={paciente.foto_url || undefined} alt={paciente.nome} className="object-cover" />
+                  <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
                   <AvatarFallback className="bg-transparent text-white text-sm font-semibold">
-                    {getIniciais(paciente.nome)}
+                    {getIniciais(familiar.nome)}
                   </AvatarFallback>
                 </Avatar>
 
@@ -110,20 +110,20 @@ export function QuickAccess({ pacientes }: QuickAccessProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-foreground truncate">
-                      {paciente.nome}
+                      {familiar.nome}
                     </span>
-                    {paciente.tipo_sanguineo && (
+                    {familiar.tipo_sanguineo && (
                       <Badge variant="outline" className="shrink-0 gap-1 h-5 text-[10px]">
                         <Droplets className="w-2.5 h-2.5 text-red-400" />
-                        {paciente.tipo_sanguineo}
+                        {familiar.tipo_sanguineo}
                       </Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-muted-foreground">
-                      {calcularIdade(paciente.data_nascimento)} anos
+                      {calcularIdade(familiar.data_nascimento)} anos
                     </span>
-                    {paciente.alergias && (
+                    {familiar.alergias && (
                       <span className="flex items-center gap-1 text-[10px] text-amber-500">
                         <AlertTriangle className="w-2.5 h-2.5" />
                         Alergias

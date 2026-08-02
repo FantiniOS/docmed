@@ -148,7 +148,7 @@ export function DashboardCalendar({
         especialidade:
           c.medicos?.especialidade || c.especialidade || null,
         local: c.local_atendimento || null,
-        paciente: c.pacientes?.nome || null,
+        paciente: c.familiares?.nome || null,
       };
       const existing = map.get(key) || [];
       existing.push(event);
@@ -166,7 +166,7 @@ export function DashboardCalendar({
         medico: e.medicos ? `Dr(a). ${e.medicos.nome}` : null,
         especialidade: e.medicos?.especialidade || null,
         local: e.local_atendimento || null,
-        paciente: e.pacientes?.nome || null,
+        paciente: e.familiares?.nome || null,
       };
       const existing = map.get(key) || [];
       existing.push(event);

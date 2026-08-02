@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Paciente } from "@/types/database";
+import type { Familiar } from "@/types/database";
 
 /**
  * Cores de avatar por índice para variar visualmente.
@@ -66,13 +66,7 @@ export default async function PacientesPage({
     console.error("Supabase Error on /pacientes:", error);
   }
 
-  // ADAPTER: Mapeia o retorno antigo para o formato 'Paciente' esperado pela UI
-  const list = (rawData || []).map((item: any) => ({
-    ...item,
-    familiarId: item.familiar_id || item.familiarId || item.id,
-    id: item.id,
-    nome: item.nome
-  })) as Paciente[];
+  const familiares = (rawData || []) as Familiar[];
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -113,7 +107,7 @@ export default async function PacientesPage({
         </div>
       )}
 
-      {list.length === 0 ? (
+      {familiares.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 gap-3 text-center">
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
@@ -139,50 +133,52 @@ export default async function PacientesPage({
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {list.map((paciente, index) => (
-            <Link key={paciente.id} href={`/pacientes/${paciente.id}`}>
-              <Card className="group transition-all duration-200 hover:shadow-md hover:border-emerald-500/30">
-                <CardContent className="p-3">
-                  <div className="flex items-start gap-3">
-                    <Avatar className={`w-9 h-9 shadow-sm bg-gradient-to-br ${avatarColors[index % avatarColors.length]}`}>
-                      <AvatarImage src={paciente.foto_url || undefined} alt={paciente.nome} className="object-cover" />
-                      <AvatarFallback className="bg-transparent text-white text-sm font-semibold">
-                        {getIniciais(paciente.nome)}
-                      </AvatarFallback>
-                    </Avatar>
+          {familiares.map((familiar, index) => {
+              const bgClass = avatarColors[index % avatarColors.length];
+              const idade = calcularIdade(familiar.data_nascimento);
 
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold truncate text-foreground group-hover:text-emerald-500 transition-colors">
-                        {paciente.nome}
-                      </h3>
-                      
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <span className="text-xs text-muted-foreground">
-                          {calcularIdade(paciente.data_nascimento)} anos
-                        </span>
-                        
-                        {paciente.tipo_sanguineo && (
-                          <Badge variant="outline" className="h-4.5 px-1.5 text-[10px] gap-1">
-                            <Droplets className="w-2.5 h-2.5 text-red-400" />
-                            {paciente.tipo_sanguineo}
-                          </Badge>
-                        )}
-                        
-                        {paciente.alergias && (
-                          <span className="flex items-center gap-1 text-[10px] text-amber-500">
-                            <AlertTriangle className="w-2.5 h-2.5" />
-                            Alergias
-                          </span>
-                        )}
+              return (
+                <Link key={familiar.id} href={`/pacientes/${familiar.id}`}>
+                  <Card className="hover:border-emerald-500/30 transition-all cursor-pointer group shadow-sm hover:shadow-md h-full bg-gradient-to-br from-card to-card/50">
+                    <CardContent className="p-5 flex flex-col items-center text-center gap-4">
+                      <Avatar className={`w-20 h-20 shadow-md bg-gradient-to-br ${bgClass}`}>
+                        <AvatarImage src={familiar.foto_url || undefined} alt={familiar.nome} className="object-cover" />
+                        <AvatarFallback className="bg-transparent text-white text-2xl font-bold">
+                          {getIniciais(familiar.nome)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="space-y-1 w-full">
+                        <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-emerald-600 transition-colors" title={familiar.nome}>
+                          {familiar.nome}
+                        </h3>
+                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+                          {idade} anos
+                          {familiar.tipo_sanguineo && (
+                            <>
+                              <span className="opacity-50">•</span>
+                              <span className="flex items-center text-red-500 font-medium text-xs">
+                                <Droplets className="w-3 h-3 mr-0.5" />
+                                {familiar.tipo_sanguineo}
+                              </span>
+                            </>
+                          )}
+                        </p>
                       </div>
-                    </div>
 
-                    <ChevronRight className="w-5 h-5 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-emerald-500 transition-all group-hover:translate-x-1 shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                      {familiar.alergias && (
+                        <div className="w-full pt-3 mt-auto border-t">
+                          <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50/50 py-1.5 rounded-md border border-amber-100">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span className="truncate max-w-[120px]">Possui Alergias</span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
         </div>
       )}
     </div>

@@ -39,18 +39,18 @@ import { toast } from "@/components/ui/toast";
 import { supabase } from "@/lib/supabase";
 import { consultaSchema, type ConsultaSchemaType, tiposConsulta } from "@/lib/validations/consulta";
 import { especialidades } from "@/lib/validations/medico";
-import type { Paciente, Medico } from "@/types/database";
+import type { Familiar, Medico } from "@/types/database";
 import { PatientHistoryTimeline } from "./patient-history-timeline";
 
 interface ConsultaFormProps {
-  pacientes: Paciente[];
+  familiares: Familiar[];
   medicos: Medico[];
   initialData?: ConsultaSchemaType & { id?: string };
   /** Data pré-preenchida vinda do calendário do Dashboard (formato datetime-local). */
   defaultDate?: string;
 }
 
-export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: ConsultaFormProps) {
+export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: ConsultaFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -172,11 +172,11 @@ export function ConsultaForm({ pacientes, medicos, initialData, defaultDate }: C
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full" aria-invalid={!!errors.familiar_id}>
                         <SelectValue placeholder="Selecione o paciente">
-                          {field.value ? pacientes.find((f) => f.id === field.value)?.nome : undefined}
+                          {field.value ? familiares.find((f) => f.id === field.value)?.nome : undefined}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {pacientes.map((fam) => (
+                        {familiares.map((fam) => (
                           <SelectItem key={fam.id} value={fam.id}>
                             {fam.nome}
                           </SelectItem>

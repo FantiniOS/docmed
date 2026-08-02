@@ -9,18 +9,18 @@ export default async function NovoExamePage({
   const supabase = await createServerSupabaseClient();
   const { data: dataParam } = await searchParams;
 
-  const [pacientesRes, medicosRes] = await Promise.all([
+  const [familiaresRes, medicosRes] = await Promise.all([
     supabase.from("familiares").select("*").order("nome", { ascending: true }),
     supabase.from("medicos").select("*").order("nome", { ascending: true }),
   ]);
 
-  const pacientes = pacientesRes.data || [];
+  const pacientes = familiaresRes.data || [];
   const medicos = medicosRes.data || [];
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-in-up">
       <ExameForm
-        pacientes={pacientes}
+        familiares={pacientes}
         medicos={medicos}
         defaultDate={dataParam}
       />

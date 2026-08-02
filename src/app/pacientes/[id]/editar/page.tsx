@@ -10,19 +10,19 @@ export default async function EditarPacientePage({
   const { id } = await params;
   const supabase = await createServerSupabaseClient();
 
-  const { data: paciente, error } = await supabase
+  const { data: familiar, error } = await supabase
     .from("familiares")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (error || !paciente) {
+  if (error || !familiar) {
     notFound();
   }
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-up">
-      <PacienteForm initialData={paciente} />
+      <PacienteForm initialData={familiar} />
     </div>
   );
 }

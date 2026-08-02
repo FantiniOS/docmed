@@ -15,7 +15,7 @@ export default async function EditarConsultaPage({
     return new Date(isoDate).toISOString().slice(0, 16);
   };
 
-  const [consultaRes, pacientesRes, medicosRes] = await Promise.all([
+  const [consultaRes, familiaresRes, medicosRes] = await Promise.all([
     supabase.from("consultas").select("*").eq("id", id).single(),
     supabase.from("familiares").select("*").order("nome", { ascending: true }),
     supabase.from("medicos").select("*").order("nome", { ascending: true }),
@@ -33,7 +33,7 @@ export default async function EditarConsultaPage({
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-up">
       <ConsultaForm
-        pacientes={pacientesRes.data || []}
+        familiares={familiaresRes.data || []}
         medicos={medicosRes.data || []}
         initialData={initialData}
       />

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { RelatorioForm } from "@/components/relatorios/relatorio-form";
-import type { Paciente, Medico, Relatorio } from "@/types/database";
+import type { Familiar, Medico, Relatorio } from "@/types/database";
 
 export default async function EditarRelatorioPage({
   params,
@@ -11,13 +11,13 @@ export default async function EditarRelatorioPage({
   const { id } = await params;
   const supabase = await createServerSupabaseClient();
 
-  const [pacientesRes, medicosRes, relatorioRes] = await Promise.all([
+  const [familiaresRes, medicosRes, relatorioRes] = await Promise.all([
     supabase.from("familiares").select("*").order("nome"),
     supabase.from("medicos").select("*").order("nome"),
     supabase.from("relatorios").select("*").eq("id", id).single(),
   ]);
 
-  const pacientes = (pacientesRes.data as Paciente[]) || [];
+  const familiares = (familiaresRes.data as Familiar[]) || [];
   const medicos = (medicosRes.data as Medico[]) || [];
   const relatorio = relatorioRes.data as Relatorio | null;
 
@@ -40,7 +40,7 @@ export default async function EditarRelatorioPage({
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-up">
       <RelatorioForm
-        pacientes={pacientes}
+        familiares={familiares}
         medicos={medicos}
         initialData={initialData}
       />
