@@ -1,9 +1,7 @@
-import { Users, CalendarCheck, FileText, Stethoscope } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { MetricCard } from "@/components/dashboard/metric-card";
+import { SmartAlerts } from "@/components/dashboard/smart-alerts";
+import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar";
 import { QuickAccess } from "@/components/dashboard/quick-access";
-import { UpcomingConsultations } from "@/components/dashboard/upcoming-consultations";
-import { RecentExams } from "@/components/dashboard/recent-exams";
 import type {
   Familiar,
   ConsultaComRelacionamentos,
@@ -11,67 +9,51 @@ import type {
 } from "@/types/database";
 
 /**
- * Busca todas as métricas e dados necessários para o Dashboard.
+ * Busca os dados necessários para o Dashboard refatorado:
+ * - Familiares (para Acesso Rápido)
+ * - Todas as consultas futuras (para calendário + smart cards)
+ * - Todos os exames futuros (para calendário + smart cards)
+ *
  * Executado no servidor (Server Component).
  */
 async function getDashboardData() {
   const supabase = await createServerSupabaseClient();
 
-  // Buscar contagens e dados em paralelo
-  const [
-    familiaresResult,
-    consultasCountResult,
-    examesCountResult,
-    medicosCountResult,
-    proximasConsultasResult,
-    ultimosExamesResult,
-  ] = await Promise.all([
-    // Todos os familiares (para contagem + acesso rápido)
+  // Data de hoje no início do dia para filtrar eventos passados
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  // Buscar primeiro dia do mês atual (para o calendário exibir o mês inteiro)
+  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+  const [familiaresResult, consultasResult, examesResult] = await Promise.all([
+    // Todos os familiares (para acesso rápido)
     supabase
       .from("familiares")
       .select("*")
       .order("nome", { ascending: true }),
 
-    // Total de consultas
-    supabase
-      .from("consultas")
-      .select("*", { count: "exact", head: true }),
-
-    // Total de exames
-    supabase
-      .from("exames")
-      .select("*", { count: "exact", head: true }),
-
-    // Total de médicos
-    supabase
-      .from("medicos")
-      .select("*", { count: "exact", head: true }),
-
-    // Próximas consultas (futuras, limit 5)
+    // Consultas a partir do início do mês atual (para mostrar no calendário)
     supabase
       .from("consultas")
       .select("*, familiares(*), medicos(*)")
-      .gte("data_consulta", new Date().toISOString())
-      .order("data_consulta", { ascending: true })
-      .limit(5),
+      .gte("data_consulta", primeiroDiaMes.toISOString())
+      .order("data_consulta", { ascending: true }),
 
-    // Últimos exames adicionados (limit 5)
+    // Exames a partir do início do mês atual (para mostrar no calendário)
     supabase
       .from("exames")
       .select("*, familiares(*), medicos(*)")
-      .order("data_exame", { ascending: false })
-      .limit(5),
+      .gte("data_exame", primeiroDiaMes.toISOString())
+      .order("data_exame", { ascending: true }),
   ]);
 
   return {
     familiares: (familiaresResult.data as Familiar[]) ?? [],
-    totalConsultas: consultasCountResult.count ?? 0,
-    totalExames: examesCountResult.count ?? 0,
-    totalMedicos: medicosCountResult.count ?? 0,
-    proximasConsultas:
-      (proximasConsultasResult.data as ConsultaComRelacionamentos[]) ?? [],
-    ultimosExames:
-      (ultimosExamesResult.data as ExameComRelacionamentos[]) ?? [],
+    consultas:
+      (consultasResult.data as ConsultaComRelacionamentos[]) ?? [],
+    exames:
+      (examesResult.data as ExameComRelacionamentos[]) ?? [],
   };
 }
 
@@ -84,11 +66,8 @@ export default async function DashboardPage() {
     // Se o Supabase não estiver configurado, renderizar com dados vazios
     data = {
       familiares: [],
-      totalConsultas: 0,
-      totalExames: 0,
-      totalMedicos: 0,
-      proximasConsultas: [],
-      ultimosExames: [],
+      consultas: [],
+      exames: [],
     };
   }
 
@@ -100,53 +79,26 @@ export default async function DashboardPage() {
           Dashboard
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Visão geral do prontuário médico familiar
+          Sua agenda médica familiar em um só lugar
         </p>
       </div>
 
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-        <MetricCard
-          title="Familiares"
-          value={data.familiares.length}
-          description="cadastrados"
-          icon={Users}
-          accentColor="emerald"
-        />
-        <MetricCard
-          title="Médicos"
-          value={data.totalMedicos}
-          description="registrados"
-          icon={Stethoscope}
-          accentColor="blue"
-        />
-        <MetricCard
-          title="Consultas"
-          value={data.totalConsultas}
-          description="registradas"
-          icon={CalendarCheck}
-          accentColor="amber"
-        />
-        <MetricCard
-          title="Exames"
-          value={data.totalExames}
-          description="registrados"
-          icon={FileText}
-          accentColor="rose"
-        />
-      </div>
+      {/* Smart Alerts — renderiza condicionalmente (retorna null se vazio) */}
+      <SmartAlerts consultas={data.consultas} exames={data.exames} />
 
-      {/* Content Grid — 2 colunas no desktop */}
+      {/* Content Grid — Calendário + Acesso Rápido */}
       <div className="grid lg:grid-cols-5 gap-3 sm:gap-4">
-        {/* Acesso Rápido — ocupa 2 colunas */}
-        <div className="lg:col-span-2">
-          <QuickAccess familiares={data.familiares} />
+        {/* Calendário — ocupa 3 colunas no desktop */}
+        <div className="lg:col-span-3">
+          <DashboardCalendar
+            consultas={data.consultas}
+            exames={data.exames}
+          />
         </div>
 
-        {/* Próximas Consultas + Últimos Exames — ocupa 3 colunas */}
-        <div className="lg:col-span-3 space-y-3 sm:space-y-4">
-          <UpcomingConsultations consultas={data.proximasConsultas} />
-          <RecentExams exames={data.ultimosExames} />
+        {/* Acesso Rápido — ocupa 2 colunas no desktop */}
+        <div className="lg:col-span-2">
+          <QuickAccess familiares={data.familiares} />
         </div>
       </div>
     </div>
