@@ -76,6 +76,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
   });
 
   const selectedFamiliarId = useWatch({ control, name: "familiar_id" });
+  const isEditing = !!initialData?.id;
 
   async function onSubmit(data: ConsultaSchemaType) {
     setIsSubmitting(true);
@@ -118,7 +119,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
             <div>
               <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                 <CalendarCheck className="w-6 h-6 text-blue-500" />
-                {initialData ? "Editar Consulta" : "Agendar Consulta"}
+                {isEditing ? "Editar Consulta" : "Agendar Consulta"}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Registre os dados da consulta médica.
@@ -375,7 +376,7 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
             ) : (
               <Save className="w-4 h-4" />
             )}
-            {isSubmitting ? "Salvando..." : "Agendar Consulta"}
+            {isSubmitting ? "Salvando..." : (isEditing ? "Salvar Alterações" : "Agendar Consulta")}
           </Button>
         </div>
       </form>
