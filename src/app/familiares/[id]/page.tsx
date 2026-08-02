@@ -18,7 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ResumoClinicoBotao } from "@/components/familiares/resumo-clinico-botao";
-import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
+import { FamiliarTabs } from "@/components/familiares/familiar-tabs";
+import type { Familiar, ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
 interface FamiliarPageProps {
   params: Promise<{ id: string }>;
@@ -55,8 +56,14 @@ function formatarData(dataString: string): string {
 async function getFamiliarData(id: string) {
   const supabase = await createServerSupabaseClient();
 
-  const [familiarResult, examesResult, relatoriosResult] = await Promise.all([
+  const [familiarResult, consultasResult, examesResult, relatoriosResult] = await Promise.all([
     supabase.from("familiares").select("*").eq("id", id).single(),
+    supabase
+      .from("consultas")
+      .select("*, medicos(*)")
+      .eq("familiar_id", id)
+      .order("data_consulta", { ascending: false })
+      .limit(10),
     supabase
       .from("exames")
       .select("*, medicos(*)")
@@ -73,6 +80,7 @@ async function getFamiliarData(id: string) {
 
   return {
     familiar: familiarResult.data as Familiar | null,
+    consultas: (consultasResult.data as ConsultaComRelacionamentos[]) ?? [],
     exames: (examesResult.data as ExameComRelacionamentos[]) ?? [],
     relatorios: (relatoriosResult.data as RelatorioComRelacionamentos[]) ?? [],
   };
@@ -92,7 +100,7 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
     notFound();
   }
 
-  const { familiar, exames, relatorios } = data;
+  const { familiar, consultas, exames, relatorios } = data;
   const idade = calcularIdade(familiar.data_nascimento);
   const splitTags = (str: string | null | undefined) =>
     str
@@ -265,177 +273,8 @@ export default async function FamiliarPerfilPage({ params }: FamiliarPageProps) 
       {/* Triagem IA e Mapeamento Corporal */}
       <ResumoClinicoBotao paciente={familiar} exames={exames} evolucao={relatorios} />
 
-      <Separator />
-
-      {/* Últimos Exames */}
-      <div>
-        <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-          <FileText className="w-5 h-5 text-amber-500" />
-          Últimos Exames
-        </h2>
-
-        {exames.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
-              <FileText className="w-8 h-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Nenhum exame registrado para este familiar
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3">
-            {exames.map((exame) => (
-              <Card key={exame.id} className="transition-all duration-200 hover:bg-accent/30">
-                <CardContent className="flex items-start gap-4 py-4">
-                  {/* Data visual */}
-                  <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-amber-500/10 shrink-0">
-                    <Calendar className="w-4 h-4 text-amber-500 mb-0.5" />
-                    <span className="text-[10px] text-amber-400 font-medium" suppressHydrationWarning>
-                      {new Date(exame.data_exame).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                      })}
-                    </span>
-                  </div>
-
-                  {/* Conteúdo */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium">
-                        {exame.nome_exame}
-                      </span>
-                      {exame.tipo_exame && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          {exame.tipo_exame}
-                        </Badge>
-                      )}
-                    </div>
-
-                    {exame.medicos && (
-                      <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                        <Stethoscope className="w-3 h-3" />
-                        Dr(a). {exame.medicos.nome}
-                        {exame.medicos.especialidade && (
-                          <span>— {exame.medicos.especialidade}</span>
-                        )}
-                      </p>
-                    )}
-
-                    {exame.observacoes && (
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                        {exame.observacoes}
-                      </p>
-                    )}
-
-                    {exame.arquivo_url && (
-                      <a
-                        href={exame.arquivo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-400 mt-2 transition-colors"
-                      >
-                        <FileText className="w-3 h-3" />
-                        Ver documento
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Timestamp */}
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
-                    <Clock className="w-3 h-3" />
-                    {new Date(exame.data_exame).getFullYear()}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Relatórios e Laudos */}
-      <div>
-        <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-          <FileText className="w-5 h-5 text-emerald-500" />
-          Relatórios e Laudos
-        </h2>
-
-        {relatorios.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
-              <FileText className="w-8 h-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Nenhum relatório médico ou laudo cadastrado
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3">
-            {relatorios.map((relatorio) => (
-              <Card key={relatorio.id} className="transition-all duration-200 hover:bg-accent/30">
-                <CardContent className="flex items-start gap-4 py-4">
-                  {/* Data visual */}
-                  <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-500/10 shrink-0">
-                    <Calendar className="w-4 h-4 text-emerald-500 mb-0.5" />
-                    <span className="text-[10px] text-emerald-600 font-medium" suppressHydrationWarning>
-                      {new Date(relatorio.data_relatorio).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                      })}
-                    </span>
-                  </div>
-
-                  {/* Conteúdo */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium">
-                        {relatorio.titulo}
-                      </span>
-                    </div>
-
-                    <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                      <Stethoscope className="w-3 h-3" />
-                      {relatorio.medicos?.nome ? (
-                        `Dr(a). ${relatorio.medicos.nome} ${relatorio.medicos.especialidade ? `— ${relatorio.medicos.especialidade}` : ""}`
-                      ) : relatorio.local_atendimento ? (
-                        relatorio.local_atendimento
-                      ) : (
-                        "Não informado"
-                      )}
-                    </p>
-
-                    {relatorio.observacoes && (
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                        {relatorio.observacoes}
-                      </p>
-                    )}
-
-                    {relatorio.arquivo_url && (
-                      <a
-                        href={relatorio.arquivo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-600 mt-2 transition-colors"
-                      >
-                        <FileText className="w-3 h-3" />
-                        Ver documento
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Timestamp */}
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
-                    <Clock className="w-3 h-3" />
-                    {new Date(relatorio.data_relatorio).getFullYear()}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Navegação por Abas e Conteúdo Dinâmico */}
+      <FamiliarTabs consultas={consultas} exames={exames} relatorios={relatorios} />
     </div>
   );
 }
