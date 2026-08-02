@@ -53,14 +53,22 @@ export default async function PacientesPage({
   const supabase = await createServerSupabaseClient();
   const { q } = await searchParams;
 
-  let query = supabase.from("pacientes").select("*").order("nome", { ascending: true });
+  // REVERT (Temporário): Consulta na tabela antiga até que o banco de dados seja atualizado
+  let query = supabase.from("familiares").select("*").order("nome", { ascending: true });
 
   if (q) {
     query = query.ilike("nome", `%${q}%`);
   }
 
-  const { data: pacientes, error } = await query;
-  const list = pacientes as Paciente[] || [];
+  const { data: rawData, error } = await query;
+  
+  // ADAPTER: Mapeia o retorno antigo para o formato 'Paciente' esperado pela UI
+  const list = (rawData || []).map((item: any) => ({
+    ...item,
+    pacienteId: item.familiar_id || item.familiarId || item.id,
+    id: item.id,
+    nome: item.nome
+  })) as Paciente[];
 
   return (
     <div className="space-y-4 animate-fade-in-up">
