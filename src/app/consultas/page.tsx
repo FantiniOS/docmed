@@ -54,7 +54,7 @@ export default async function ConsultasPage({
   // Para MVP, vamos trazer as consultas ordenadas.
   let query = supabase
     .from("consultas")
-    .select("*, pacientes(*), medicos(*)")
+    .select("*, pacientes:familiares(*), medicos(*)")
     .order("data_consulta", { ascending: false });
 
   const { data: consultas, error } = await query;

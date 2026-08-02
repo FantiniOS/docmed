@@ -29,13 +29,13 @@ async function getDashboardData() {
     // Consultas completas (histórico incluído para o calendário)
     supabase
       .from("consultas")
-      .select("*, pacientes(*), medicos(*)")
+      .select("*, pacientes:familiares(*), medicos(*)")
       .order("data_consulta", { ascending: true }),
 
     // Exames completos (histórico incluído para o calendário)
     supabase
       .from("exames")
-      .select("*, pacientes(*), medicos(*)")
+      .select("*, pacientes:familiares(*), medicos(*)")
       .order("data_exame", { ascending: true }),
   ]);
 
