@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     });
 
     const body = await req.json();
+    console.log("PAYLOAD RECEBIDO DO FRONTEND:", body);
     
     // Validate payload
     if (!body || (!body.paciente && !body.exames && !body.evolucao)) {
@@ -185,9 +186,9 @@ REGRAS CRÍTICAS:
 
     return NextResponse.json(object);
   } catch (error: any) {
-    console.error('Erro ao gerar resumo:', error);
+    console.error("ERRO COMPLETO NA API DE IA:", error);
     return NextResponse.json(
-      { error: 'Falha ao gerar resumo com IA.', details: error.message },
+      { error: error instanceof Error ? error.message : "Erro desconhecido" },
       { status: 500 }
     );
   }
