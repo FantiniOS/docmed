@@ -55,7 +55,10 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
     formState: { errors },
   } = useForm<RelatorioSchemaType>({
     resolver: zodResolver(relatorioSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      ...initialData,
+      data_relatorio: initialData.data_relatorio.split('T')[0]
+    } : {
       familiar_id: "",
       medico_id: null,
       titulo: "",
@@ -96,15 +99,20 @@ export function RelatorioForm({ familiares, medicos, initialData }: RelatorioFor
         finalArquivoUrl = publicUrlData.publicUrl;
       }
 
-      data.arquivo_url = finalArquivoUrl;
+      const payload = {
+        ...data,
+        arquivo_url: finalArquivoUrl,
+        data_relatorio: data.data_relatorio.includes('T') ? data.data_relatorio : `${data.data_relatorio}T12:00:00`
+      };
+
       setUploadingText("");
 
       if (initialData?.id) {
-        const { error } = await supabase.from("relatorios").update(data).eq("id", initialData.id);
+        const { error } = await supabase.from("relatorios").update(payload).eq("id", initialData.id);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Relatório atualizado.", type: "success" });
       } else {
-        const { error } = await supabase.from("relatorios").insert([data]);
+        const { error } = await supabase.from("relatorios").insert([payload]);
         if (error) throw error;
         toast.add({ title: "Sucesso!", description: "Relatório cadastrado.", type: "success" });
       }

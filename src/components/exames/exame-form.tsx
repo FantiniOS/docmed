@@ -63,7 +63,14 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
     formState: { errors },
   } = useForm<ExameSchemaType>({
     resolver: zodResolver(exameSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      ...initialData,
+      data_exame: initialData.data_exame 
+        ? (initialData.data_exame.includes('T') 
+            ? initialData.data_exame.substring(0, 16) 
+            : `${initialData.data_exame}T12:00`) 
+        : ""
+    } : {
       familiar_id: "",
       medico_id: null,
       nome_exame: "",
@@ -105,23 +112,58 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
         finalArquivoUrl = publicUrlData.publicUrl;
       }
 
-      data.arquivo_url = finalArquivoUrl;
-      setUploadingText("");
+      const payloadLimpo = {
+        familiar_id: data.familiar_id,
+        medico_id: data.medico_id === "none" ? null : data.medico_id,
+        nome_exame: data.nome_exame,
+        tipo_exame: data.tipo_exame,
+        data_exame: data.data_exame.length === 10 ? `${data.data_exame}T12:00:00` : data.data_exame,
+        arquivo_url: finalArquivoUrl,
+        observacoes: data.observacoes,
+        local_atendimento: data.local_atendimento,
+      };
+
+      console.log('PAYLOAD DE UPDATE/INSERT ENVIADO:', JSON.stringify(payloadLimpo, null, 2));
 
       if (initialData?.id) {
-        const { error } = await supabase.from("exames").update(data).eq("id", initialData.id);
-        if (error) throw error;
+        console.log('ID DO EXAME SENDO EDITADO:', initialData.id);
+        const { data: updatedData, error } = await supabase.from("exames").update(payloadLimpo).eq("id", initialData.id).select();
+        if (error) {
+          console.error('ERRO SUPABASE UPDATE:', error);
+          toast.add({ title: "Erro ao salvar", description: error.message, type: "error" });
+          setSubmitError(error.message);
+          return;
+        }
+        if (!updatedData || updatedData.length === 0) {
+          console.error('ALERTA RLS: O Supabase não atualizou a linha. Verifique as políticas de RLS (Row Level Security).');
+          toast.add({ title: "Erro de Permissão (RLS)", description: "A alteração foi bloqueada pelo banco de dados.", type: "error" });
+          setSubmitError("Bloqueado por RLS. Nenhuma linha foi afetada.");
+          return;
+        }
         toast.add({ title: "Sucesso!", description: "Exame atualizado.", type: "success" });
       } else {
-        const { error } = await supabase.from("exames").insert([data]);
-        if (error) throw error;
+        const { data: insertedData, error } = await supabase.from("exames").insert([payloadLimpo]).select();
+        if (error) {
+          console.error('ERRO SUPABASE INSERT:', error);
+          toast.add({ title: "Erro ao salvar", description: error.message, type: "error" });
+          setSubmitError(error.message);
+          return;
+        }
+        if (!insertedData || insertedData.length === 0) {
+          console.error('ALERTA RLS: O Supabase não inseriu a linha. Verifique as políticas de RLS.');
+          toast.add({ title: "Erro de Permissão (RLS)", description: "A inserção foi bloqueada pelo banco de dados.", type: "error" });
+          setSubmitError("Bloqueado por RLS. Nenhuma linha foi inserida.");
+          return;
+        }
         toast.add({ title: "Sucesso!", description: "Exame cadastrado.", type: "success" });
       }
 
-      router.push("/exames");
-      router.refresh();
+      // Hard redirect to bust Next.js App Router aggressive client cache
+      window.location.href = "/exames";
     } catch (err: any) {
+      console.error('ERRO CATCH:', err);
       setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
+      toast.add({ title: "Erro inesperado", description: err.message || "Erro inesperado ao salvar", type: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -147,6 +189,17 @@ export function ExameForm({ familiares, medicos, initialData, defaultDate }: Exa
 
       const data = await res.json();
       
+      if (data.familiar_nome) {
+        const lowerNomeIA = data.familiar_nome.toLowerCase();
+        const matched = familiares.find(f => 
+          f.nome.toLowerCase().includes(lowerNomeIA) || 
+          lowerNomeIA.includes(f.nome.toLowerCase().split(' ')[0])
+        );
+        if (matched) {
+          setValue("familiar_id", matched.id);
+        }
+      }
+
       if (data.nome_exame) setValue("nome_exame", data.nome_exame);
       if (data.tipo_exame) setValue("tipo_exame", data.tipo_exame);
       if (data.data_exame) setValue("data_exame", data.data_exame);

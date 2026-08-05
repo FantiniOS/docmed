@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ResumoClinicoBotao } from "@/components/pacientes/resumo-clinico-botao";
 import { PacienteTabs } from "@/components/pacientes/paciente-tabs";
+import { parseLocal } from "@/lib/utils";
 import type { Familiar, ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
 interface PacientePageProps {
@@ -30,7 +31,7 @@ interface PacientePageProps {
  */
 function calcularIdade(dataNascimento: string): number {
   const hoje = new Date();
-  const nascimento = new Date(dataNascimento);
+  const nascimento = parseLocal(dataNascimento);
   let idade = hoje.getFullYear() - nascimento.getFullYear();
   const m = hoje.getMonth() - nascimento.getMonth();
   if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
@@ -43,7 +44,7 @@ function calcularIdade(dataNascimento: string): number {
  * Formata data ISO para exibição.
  */
 function formatarData(dataString: string): string {
-  return new Date(dataString).toLocaleDateString("pt-BR", {
+  return parseLocal(dataString).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",

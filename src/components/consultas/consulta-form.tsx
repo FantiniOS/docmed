@@ -62,7 +62,10 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
     formState: { errors },
   } = useForm<ConsultaSchemaType>({
     resolver: zodResolver(consultaSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      ...initialData,
+      data_consulta: initialData.data_consulta.substring(0, 16)
+    } : {
       familiar_id: "",
       medico_id: "",
       data_consulta: defaultDate || "",
@@ -85,19 +88,56 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
     setSubmitError(null);
 
     try {
+      const payloadLimpo = {
+        familiar_id: data.familiar_id,
+        medico_id: data.medico_id === "none" ? null : data.medico_id,
+        data_consulta: data.data_consulta.substring(0, 16),
+        motivo: data.motivo,
+        diagnostico: data.diagnostico,
+        prescricao: data.prescricao,
+        local_atendimento: data.local_atendimento,
+        especialidade: data.especialidade,
+        tipo_consulta: data.tipo_consulta,
+      };
+
+      console.log('PAYLOAD DE CONSULTA ENVIADO:', JSON.stringify(payloadLimpo, null, 2));
+
       if (initialData?.id) {
-        const { error } = await supabase.from("consultas").update(data).eq("id", initialData.id);
-        if (error) throw error;
+        console.log('ID DA CONSULTA SENDO EDITADA:', initialData.id);
+        const { data: updatedData, error } = await supabase.from("consultas").update(payloadLimpo).eq("id", initialData.id).select();
+        if (error) {
+          console.error('ERRO SUPABASE UPDATE:', error);
+          toast.add({ title: "Erro ao salvar", description: error.message, type: "error" });
+          setSubmitError(error.message);
+          return;
+        }
+        if (!updatedData || updatedData.length === 0) {
+          console.error('ALERTA RLS: A consulta não foi atualizada.');
+          toast.add({ title: "Erro de Permissão (RLS)", description: "A alteração foi bloqueada.", type: "error" });
+          setSubmitError("Bloqueado por RLS.");
+          return;
+        }
         toast.add({ title: "Sucesso!", description: "Consulta atualizada.", type: "success" });
       } else {
-        const { error } = await supabase.from("consultas").insert([data]);
-        if (error) throw error;
+        const { data: insertedData, error } = await supabase.from("consultas").insert([payloadLimpo]).select();
+        if (error) {
+          console.error('ERRO SUPABASE INSERT:', error);
+          toast.add({ title: "Erro ao salvar", description: error.message, type: "error" });
+          setSubmitError(error.message);
+          return;
+        }
+        if (!insertedData || insertedData.length === 0) {
+          console.error('ALERTA RLS: A consulta não foi inserida.');
+          toast.add({ title: "Erro de Permissão (RLS)", description: "A inserção foi bloqueada.", type: "error" });
+          setSubmitError("Bloqueado por RLS.");
+          return;
+        }
         toast.add({ title: "Sucesso!", description: "Consulta agendada.", type: "success" });
       }
 
-      router.push("/consultas");
-      router.refresh();
+      window.location.href = "/consultas";
     } catch (err: any) {
+      console.error('ERRO CATCH:', err);
       setSubmitError(err.message || "Erro inesperado ao salvar. Tente novamente.");
     } finally {
       setIsSubmitting(false);

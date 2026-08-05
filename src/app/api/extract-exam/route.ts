@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateObject } from 'ai';
+import { generateText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 
@@ -24,28 +24,30 @@ export async function POST(req: Request) {
     const buffer = await file.arrayBuffer();
     const isImage = file.type.startsWith('image/');
 
-    const result = await generateObject({
+    const systemPrompt = `Você é um assistente médico especialista. Analise o documento em anexo e extraia as informações clínicas.
+REGRAS CRÍTICAS DE SAÍDA:
+- Retorne ÚNICA E EXCLUSIVAMENTE um objeto JSON válido, sem nenhum texto antes ou depois.
+- As chaves EXATAS do JSON devem ser:
+  "familiar_nome" (string ou null, extraia o nome do paciente/familiar do documento),
+  "nome_exame" (string, nome principal do exame),
+  "tipo_exame" (string ou null, classifique como: Exame de Sangue, Exame de Imagem, Urina / Fezes, Avaliação Cardiológica, Exame Genético ou Outro),
+  "data_exame" (string ou null, formato YYYY-MM-DD),
+  "observacoes" (string ou null, principais achados e conclusão literal).
+- NUNCA use "paciente_id". Se houver nome, use "familiar_nome".`;
+
+    const { text: responseText } = await generateText({
       model: google('gemini-2.5-flash'),
-      schema: z.object({
-        nome_exame: z.string().describe("Nome principal do exame, ex: Hemograma Completo, Ultrassom Abdominal"),
-        tipo_exame: z.enum([
-          "Exame de Sangue",
-          "Exame de Imagem (Raio-X, Tomografia, etc)",
-          "Urina / Fezes",
-          "Avaliação Cardiológica",
-          "Exame Genético",
-          "Outro"
-        ]).nullable().describe("Classifique o exame em um dos tipos disponíveis"),
-        data_exame: z.string().nullable().describe("Data da realização do exame no formato YYYY-MM-DD. Caso não seja encontrada, retorne null."),
-        observacoes: z.string().nullable().describe("Extraia os ACHADOS PRINCIPAIS e copie a CONCLUSÃO (ou impressão diagnóstica) do exame de forma literal. Destaque e liste os valores que estão fora da referência (anormais). Use um texto claro, objetivo e em português. Se tudo estiver normal, informe que não há alterações significativas, mas sempre inclua a conclusão final do médico radiologista/patologista se estiver presente no documento.")
-      }),
       messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
         {
           role: 'user',
           content: [
             { 
               type: 'text', 
-              text: 'Você é um assistente médico especialista. Analise o documento em anexo (resultado de exame laboratorial ou de laudo de imagem) e extraia as informações solicitadas no schema. O campo "observacoes" é de extrema importância: transcreva a conclusão médica/impressão diagnóstica e liste os principais achados. Não invente dados que não estão na imagem/documento.' 
+              text: 'Extraia as informações do exame anexado. Lembre-se: retorne APENAS um JSON válido seguindo a estrutura solicitada.' 
             },
             isImage ? {
               type: 'image',
@@ -60,7 +62,18 @@ export async function POST(req: Request) {
       ]
     });
 
-    return NextResponse.json(result.object);
+    const cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    console.log("RESPOSTA CRUA DA IA:", cleanText);
+
+    let parsedData;
+    try {
+      parsedData = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.error("Erro ao fazer parse do JSON da IA:", parseError);
+      return NextResponse.json({ error: 'A resposta da IA não foi um JSON válido.', details: cleanText }, { status: 500 });
+    }
+
+    return NextResponse.json(parsedData);
   } catch (error: any) {
     console.error('Erro na extração do exame:', error);
     return NextResponse.json(

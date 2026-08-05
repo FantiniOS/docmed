@@ -1,9 +1,11 @@
 "use client";
+import { useState, useEffect } from "react";
 
 import Link from "next/link";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { parseLocal } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -19,6 +21,11 @@ interface ExamTableProps {
 }
 
 export function ExamTable({ exames }: ExamTableProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (!exames || exames.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground border rounded-lg bg-card/50">
@@ -62,7 +69,13 @@ export function ExamTable({ exames }: ExamTableProps) {
                 )}
               </TableCell>
               <TableCell>
-                {format(new Date(exame.data_exame), "dd/MM/yyyy", { locale: ptBR })}
+                {mounted ? (() => {
+                  const dataStr = exame.data_exame.includes('T') ? exame.data_exame.substring(0, 16) : exame.data_exame;
+                  const dateObj = parseLocal(dataStr);
+                  const formatted = format(dateObj, "dd/MM/yyyy", { locale: ptBR });
+                  const hasTime = dataStr.includes('T') && !dataStr.endsWith('T00:00') && !dataStr.endsWith('T12:00');
+                  return hasTime ? `${formatted} às ${format(dateObj, "HH:mm")}` : formatted;
+                })() : "..."}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-1 sm:gap-2">

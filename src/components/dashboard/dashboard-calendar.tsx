@@ -59,10 +59,10 @@ type DayEvent = {
   id: string;
   title: string;
   hora: string;
-  medico: string | null;
-  especialidade: string | null;
-  local: string | null;
-  paciente: string | null;
+  medico: string;
+  especialidade: string;
+  local: string;
+  paciente: string;
 };
 
 const WEEKDAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -136,41 +136,56 @@ export function DashboardCalendar({
   const eventsByDay = useMemo(() => {
     const map = new Map<string, DayEvent[]>();
 
-    for (const c of consultas) {
-      const date = parseLocal(c.data_consulta);
-      const key = getDateKey(date);
-      const event: DayEvent = {
-        type: "consulta",
-        id: c.id,
-        title: c.motivo || "Consulta médica",
-        hora: getHora(c.data_consulta),
-        medico: c.medicos ? `Dr(a). ${c.medicos.nome}` : null,
-        especialidade:
-          c.medicos?.especialidade || c.especialidade || null,
-        local: c.local_atendimento || null,
-        paciente: c.familiares?.nome || null,
-      };
-      const existing = map.get(key) || [];
-      existing.push(event);
-      map.set(key, existing);
+    const validConsultas = (consultas || []).filter(
+      (c) => c?.data_consulta && c?.familiar_id
+    );
+
+    for (const c of validConsultas) {
+      try {
+        const date = parseLocal(c.data_consulta);
+        const key = getDateKey(date);
+        const event: DayEvent = {
+          type: "consulta",
+          id: c.id,
+          title: c.motivo ?? "Consulta médica",
+          hora: getHora(c.data_consulta),
+          medico: c.medicos?.nome ? `Dr(a). ${c.medicos.nome}` : "Médico não informado",
+          especialidade: c.medicos?.especialidade ?? c.especialidade ?? "Especialidade não informada",
+          local: c.local_atendimento ?? "Local não informado",
+          paciente: c.familiares?.nome ?? "Paciente não identificado",
+        };
+        const existing = map.get(key) || [];
+        existing.push(event);
+        map.set(key, existing);
+      } catch (err) {
+        console.error("Erro ao processar consulta no calendário", err, c);
+      }
     }
 
-    for (const e of exames) {
-      const date = parseLocal(e.data_exame);
-      const key = getDateKey(date);
-      const event: DayEvent = {
-        type: "exame",
-        id: e.id,
-        title: e.nome_exame,
-        hora: getHora(e.data_exame),
-        medico: e.medicos ? `Dr(a). ${e.medicos.nome}` : null,
-        especialidade: e.medicos?.especialidade || null,
-        local: e.local_atendimento || null,
-        paciente: e.familiares?.nome || null,
-      };
-      const existing = map.get(key) || [];
-      existing.push(event);
-      map.set(key, existing);
+    const validExames = (exames || []).filter(
+      (e) => e?.data_exame && e?.familiar_id
+    );
+
+    for (const e of validExames) {
+      try {
+        const date = parseLocal(e.data_exame);
+        const key = getDateKey(date);
+        const event: DayEvent = {
+          type: "exame",
+          id: e.id,
+          title: e.nome_exame ?? "Exame",
+          hora: getHora(e.data_exame),
+          medico: e.medicos?.nome ? `Dr(a). ${e.medicos.nome}` : "Médico não informado",
+          especialidade: e.medicos?.especialidade ?? "Especialidade não informada",
+          local: e.local_atendimento ?? "Local não informado",
+          paciente: e.familiares?.nome ?? "Paciente não identificado",
+        };
+        const existing = map.get(key) || [];
+        existing.push(event);
+        map.set(key, existing);
+      } catch (err) {
+        console.error("Erro ao processar exame no calendário", err, e);
+      }
     }
 
     return map;
@@ -216,6 +231,15 @@ export function DashboardCalendar({
     const dateParam = toDatetimeLocalValue(selectedDate);
     router.push(`/exames/novo?data=${encodeURIComponent(dateParam)}`);
   }, [selectedDate, router]);
+
+  // Editar agendamento existente
+  const handleEditEvent = useCallback((event: DayEvent) => {
+    if (event.type === "consulta") {
+      router.push(`/consultas/${event.id}/editar`);
+    } else {
+      router.push(`/exames/${event.id}/editar`);
+    }
+  }, [router]);
 
   function handlePrevMonth() {
     setCurrentMonth((prev) => subMonths(prev, 1));
@@ -383,14 +407,16 @@ export function DashboardCalendar({
                                 }`}
                               />
                               <span className="font-bold truncate">
-                                {event.paciente ? event.paciente.split(' ').slice(0, 2).join(' ') : "Paciente não informado"}
+                                {event.paciente === "Paciente não identificado" 
+                                  ? event.paciente 
+                                  : event.paciente.split(' ').slice(0, 2).join(' ')}
                               </span>
                               <span className="text-muted-foreground ml-auto text-[10px] shrink-0">
                                 {event.hora}
                               </span>
                             </div>
                             <span className="text-muted-foreground truncate ml-3">
-                              {event.type === 'consulta' ? (event.medico || event.title) : event.title}
+                              {event.type === 'consulta' ? (event.medico !== "Médico não informado" ? event.medico : event.title) : event.title}
                             </span>
                           </div>
                         ))}
@@ -565,12 +591,13 @@ export function DashboardCalendar({
             {selectedDayEvents.map((event) => (
               <div
                 key={`${event.type}-${event.id}`}
+                onClick={() => handleEditEvent(event)}
                 className={`
-                  p-3 rounded-lg border-l-3
+                  p-3 rounded-lg border-l-3 cursor-pointer transition-colors hover:brightness-95
                   ${
                     event.type === "consulta"
-                      ? "border-l-blue-500 bg-blue-500/5"
-                      : "border-l-amber-500 bg-amber-500/5"
+                      ? "border-l-blue-500 bg-blue-500/5 hover:bg-blue-500/10"
+                      : "border-l-amber-500 bg-amber-500/5 hover:bg-amber-500/10"
                   }
                 `}
               >
@@ -603,29 +630,25 @@ export function DashboardCalendar({
                     <span>{event.hora}</span>
                   </div>
 
-                  {event.paciente && (
-                    <div className="flex items-center gap-1.5">
-                      <User className="w-3 h-3 shrink-0" />
-                      <span>{event.paciente}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-3 h-3 shrink-0" />
+                    <span>{event.paciente}</span>
+                  </div>
 
-                  {event.medico && (
-                    <div className="flex items-center gap-1.5">
-                      <Stethoscope className="w-3 h-3 shrink-0" />
-                      <span>
-                        {event.medico}
-                        {event.especialidade && (
-                          <span className="text-muted-foreground/70">
-                            {" "}
-                            · {event.especialidade}
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    <Stethoscope className="w-3 h-3 shrink-0" />
+                    <span>
+                      {event.medico}
+                      {event.especialidade && event.especialidade !== "Especialidade não informada" && (
+                        <span className="text-muted-foreground/70">
+                          {" "}
+                          · {event.especialidade}
+                        </span>
+                      )}
+                    </span>
+                  </div>
 
-                  {event.local && (
+                  {event.local && event.local !== "Local não informado" && (
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-3 h-3 shrink-0" />
                       <span>{event.local}</span>

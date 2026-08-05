@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 // Atualizado com a seção de relatórios
 import Link from "next/link";
 import { ArrowLeft, FileText, Plus } from "lucide-react";

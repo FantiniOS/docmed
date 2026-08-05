@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertCircle,
   CalendarCheck,
@@ -14,6 +16,8 @@ import type {
   ConsultaComRelacionamentos,
   ExameComRelacionamentos,
 } from "@/types/database";
+import { parseLocal } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 interface SmartAlertsProps {
   consultas: ConsultaComRelacionamentos[];
@@ -26,7 +30,7 @@ interface SmartAlertsProps {
 function diffDias(dataString: string): number {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
-  const data = new Date(dataString);
+  const data = parseLocal(dataString);
   data.setHours(0, 0, 0, 0);
   return Math.round((data.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
 }
@@ -53,7 +57,7 @@ function getBadgeVariant(diff: number): "destructive" | "secondary" | "outline" 
  * Formata data/hora para exibição legível.
  */
 function formatarDataHora(dataString: string): { data: string; hora: string } {
-  const date = new Date(dataString);
+  const date = parseLocal(dataString);
   const data = date.toLocaleDateString("pt-BR", {
     weekday: "short",
     day: "2-digit",
@@ -73,6 +77,9 @@ function formatarDataHora(dataString: string): { data: string; hora: string } {
  * Se não houver eventos nessa janela, retorna null para manter a tela limpa.
  */
 export function SmartAlerts({ consultas, exames }: SmartAlertsProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Filtrar eventos que estão dentro da janela de 2 dias
   const consultasProximas = consultas.filter((c) => {
     const diff = diffDias(c.data_consulta);
@@ -150,6 +157,13 @@ export function SmartAlerts({ consultas, exames }: SmartAlertsProps) {
                     <Clock className="w-3 h-3 shrink-0" />
                     <span suppressHydrationWarning>
                       {data} · {hora}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-3 h-3 shrink-0 text-blue-500" />
+                    <span className="font-medium text-foreground">
+                      Paciente: {consulta.familiares?.nome || 'Paciente não identificado'}
                     </span>
                   </div>
 
@@ -235,6 +249,13 @@ export function SmartAlerts({ consultas, exames }: SmartAlertsProps) {
                     <Clock className="w-3 h-3 shrink-0" />
                     <span suppressHydrationWarning>
                       {data} · {hora}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-3 h-3 shrink-0 text-amber-500" />
+                    <span className="font-medium text-foreground">
+                      Paciente: {exame.familiares?.nome || 'Paciente não identificado'}
                     </span>
                   </div>
 

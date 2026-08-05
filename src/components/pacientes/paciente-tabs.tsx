@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarCheck, FileText, Stethoscope, Clock, Calendar, Droplet, ClipboardList, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { parseLocal } from "@/lib/utils";
 import type { ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
 interface PacienteTabsProps {
@@ -21,6 +22,9 @@ export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProp
   const [activeView, setActiveView] = useState<"consultas" | "exames" | "laudos" | null>(null);
   const [termoBusca, setTermoBusca] = useState("");
   const [filtroMedico, setFiltroMedico] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const medicosUnicos = useMemo(() => {
     const medicos = new Map<string, string>();
@@ -165,11 +169,11 @@ export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProp
                       {/* Data visual */}
                       <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-blue-500/10 shrink-0">
                         <Calendar className="w-4 h-4 text-blue-500 mb-0.5" />
-                        <span className="text-[10px] text-blue-600 font-medium" suppressHydrationWarning>
-                          {new Date(consulta.data_consulta).toLocaleDateString("pt-BR", {
+                        <span className="text-[10px] text-blue-600 font-medium">
+                          {mounted ? parseLocal(consulta.data_consulta).toLocaleDateString("pt-BR", {
                             day: "2-digit",
                             month: "short",
-                          })}
+                          }) : "..."}
                         </span>
                       </div>
 
@@ -241,11 +245,11 @@ export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProp
                       {/* Data visual */}
                       <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-amber-500/10 shrink-0">
                         <Calendar className="w-4 h-4 text-amber-500 mb-0.5" />
-                        <span className="text-[10px] text-amber-500 font-medium" suppressHydrationWarning>
-                          {new Date(exame.data_exame).toLocaleDateString("pt-BR", {
+                        <span className="text-[10px] text-amber-500 font-medium">
+                          {mounted ? parseLocal(exame.data_exame).toLocaleDateString("pt-BR", {
                             day: "2-digit",
                             month: "short",
-                          })}
+                          }) : "..."}
                         </span>
                       </div>
 
@@ -294,7 +298,7 @@ export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProp
 
                       <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
                         <Clock className="w-3 h-3" />
-                        {new Date(exame.data_exame).getFullYear()}
+                        {mounted ? parseLocal(exame.data_exame).getFullYear() : ""}
                       </div>
                     </CardContent>
                   </Card>
@@ -333,11 +337,11 @@ export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProp
                       {/* Data visual */}
                       <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-emerald-500/10 shrink-0">
                         <Calendar className="w-4 h-4 text-emerald-500 mb-0.5" />
-                        <span className="text-[10px] text-emerald-600 font-medium" suppressHydrationWarning>
-                          {new Date(relatorio.data_relatorio).toLocaleDateString("pt-BR", {
+                        <span className="text-[10px] text-emerald-600 font-medium">
+                          {mounted ? parseLocal(relatorio.data_relatorio).toLocaleDateString("pt-BR", {
                             day: "2-digit",
                             month: "short",
-                          })}
+                          }) : "..."}
                         </span>
                       </div>
 
@@ -382,7 +386,7 @@ export function PacienteTabs({ consultas, exames, relatorios }: PacienteTabsProp
 
                       <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
                         <Clock className="w-3 h-3" />
-                        {new Date(relatorio.data_relatorio).getFullYear()}
+                        {mounted ? parseLocal(relatorio.data_relatorio).getFullYear() : ""}
                       </div>
                     </CardContent>
                   </Card>

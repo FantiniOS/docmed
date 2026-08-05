@@ -52,7 +52,10 @@ export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType
     formState: { errors },
   } = useForm<FamiliarSchemaType>({
     resolver: zodResolver(familiarSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      ...initialData,
+      data_nascimento: initialData.data_nascimento.split('T')[0]
+    } : {
       nome: "",
       data_nascimento: "",
       tipo_sanguineo: null,
@@ -94,7 +97,11 @@ export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType
         fotoUrl = publicUrlData.publicUrl;
       }
       
-      const payload = { ...data, foto_url: fotoUrl };
+      const payload = { 
+        ...data, 
+        foto_url: fotoUrl,
+        data_nascimento: data.data_nascimento.includes('T') ? data.data_nascimento : `${data.data_nascimento}T12:00:00`
+      };
 
       if (initialData?.id) {
         const { error } = await supabase.from("familiares").update(payload).eq("id", initialData.id);

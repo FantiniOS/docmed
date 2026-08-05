@@ -1,11 +1,12 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import { FileText, Calendar, User, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { parseLocal } from "@/lib/utils";
 import type { ExameComRelacionamentos } from "@/types/database";
 
 interface RecentExamsProps {
@@ -16,7 +17,7 @@ interface RecentExamsProps {
  * Formata data ISO para exibição curta (ex: "24/07/2026").
  */
 function formatarData(dataString: string): string {
-  const date = new Date(dataString);
+  const date = parseLocal(dataString);
   return date.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -46,6 +47,9 @@ function formatarNome(nome: string): string {
 }
 
 export function RecentExams({ exames }: RecentExamsProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <Card>
       <CardHeader>
@@ -111,9 +115,9 @@ export function RecentExams({ exames }: RecentExamsProps) {
                         {formatarNome(exame.familiares.nome)}
                       </span>
                     )}
-                    <span className="flex items-center gap-1" suppressHydrationWarning>
+                    <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {formatarData(exame.data_exame)}
+                      {mounted ? formatarData(exame.data_exame) : "..."}
                     </span>
                   </div>
                 </div>
