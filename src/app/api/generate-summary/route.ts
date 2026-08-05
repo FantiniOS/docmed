@@ -27,11 +27,16 @@ export async function POST(req: Request) {
     console.log("PAYLOAD RECEBIDO DO FRONTEND:", body);
     
     // Validate payload
-    if (!body || (!body.paciente && !body.exames && !body.evolucao)) {
+    if (!body || (!body.paciente && !body.familiar && !body.exames && !body.evolucao)) {
       return NextResponse.json({ error: 'Dados insuficientes fornecidos para resumo.' }, { status: 400 });
     }
 
-    const { paciente, exames, evolucao } = body;
+    const { exames, evolucao } = body;
+    const paciente = body.paciente || body.familiar;
+
+    if (!paciente) {
+      return NextResponse.json({ error: 'Dados do paciente/familiar ausentes.' }, { status: 400 });
+    }
 
     // =============================================
     // LIMPEZA DE DADOS — Enviar apenas campos relevantes para a IA
