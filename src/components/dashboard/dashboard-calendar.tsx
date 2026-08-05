@@ -28,6 +28,7 @@ import {
   MapPin,
   Plus,
   CalendarPlus,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/toast";
+import { supabase } from "@/lib/supabase";
 import type {
   ConsultaComRelacionamentos,
   ExameComRelacionamentos,
@@ -132,11 +136,41 @@ export function DashboardCalendar({
   const [newBookingDialogOpen, setNewBookingDialogOpen] = useState(false);
   const [eventsDialogOpen, setEventsDialogOpen] = useState(false);
 
+  // Estados locais para update otimista
+  const [localConsultas, setLocalConsultas] = useState(consultas);
+  const [localExames, setLocalExames] = useState(exames);
+
+  const [eventToDelete, setEventToDelete] = useState<DayEvent | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteEvent = async () => {
+    if (!eventToDelete) return;
+    setIsDeleting(true);
+    try {
+      const table = eventToDelete.type === "consulta" ? "consultas" : "exames";
+      const { error } = await supabase.from(table).delete().eq("id", eventToDelete.id);
+      if (error) throw error;
+      
+      if (eventToDelete.type === "consulta") {
+        setLocalConsultas(prev => prev.filter(c => c.id !== eventToDelete.id));
+      } else {
+        setLocalExames(prev => prev.filter(e => e.id !== eventToDelete.id));
+      }
+      toast.add({ title: "Sucesso", description: "Registro excluído com sucesso.", type: "success" });
+    } catch (err: any) {
+      console.error("Erro ao excluir registro:", err);
+      toast.add({ title: "Erro", description: "Falha ao excluir o registro.", type: "error" });
+    } finally {
+      setIsDeleting(false);
+      setEventToDelete(null);
+    }
+  };
+
   // Construir mapa de eventos por dia para lookup O(1)
   const eventsByDay = useMemo(() => {
     const map = new Map<string, DayEvent[]>();
 
-    const validConsultas = (consultas || []).filter(
+    const validConsultas = (localConsultas || []).filter(
       (c) => c?.data_consulta && c?.familiar_id
     );
 
@@ -162,7 +196,7 @@ export function DashboardCalendar({
       }
     }
 
-    const validExames = (exames || []).filter(
+    const validExames = (localExames || []).filter(
       (e) => e?.data_exame && e?.familiar_id
     );
 
@@ -189,7 +223,7 @@ export function DashboardCalendar({
     }
 
     return map;
-  }, [consultas, exames]);
+  }, [localConsultas, localExames]);
 
   // Gerar dias do calendário (inclui dias do mês anterior e próximo para completar a grade)
   const calendarDays = useMemo(() => {
@@ -655,9 +689,40 @@ export function DashboardCalendar({
                     </div>
                   )}
                 </div>
+                <div className="mt-2 flex justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEventToDelete(event);
+                    }}
+                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!eventToDelete} onOpenChange={(open) => !open && setEventToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir Registro</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setEventToDelete(null)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteEvent} disabled={isDeleting}>
+              {isDeleting ? "Excluindo..." : "Excluir"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

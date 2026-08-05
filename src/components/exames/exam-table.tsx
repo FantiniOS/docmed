@@ -7,6 +7,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { parseLocal } from "@/lib/utils";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
+import { supabase } from "@/lib/supabase";
+import {
   Table,
   TableBody,
   TableCell,
@@ -20,13 +31,36 @@ interface ExamTableProps {
   exames: ExameComRelacionamentos[];
 }
 
-export function ExamTable({ exames }: ExamTableProps) {
+export function ExamTable({ exames: initialExames }: ExamTableProps) {
   const [mounted, setMounted] = useState(false);
+  const [examesList, setExamesList] = useState<ExameComRelacionamentos[]>(initialExames);
+  const [exameToDelete, setExameToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setExamesList(initialExames);
+  }, [initialExames]);
 
-  if (!exames || exames.length === 0) {
+  const handleDelete = async () => {
+    if (!exameToDelete) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from("exames").delete().eq("id", exameToDelete);
+      if (error) throw error;
+      
+      setExamesList(prev => prev.filter(item => item.id !== exameToDelete));
+      toast.add({ title: "Sucesso", description: "Exame excluído com sucesso.", type: "success" });
+    } catch (err: any) {
+      console.error("Erro ao excluir exame:", err);
+      toast.add({ title: "Erro", description: "Falha ao excluir exame.", type: "error" });
+    } finally {
+      setIsDeleting(false);
+      setExameToDelete(null);
+    }
+  };
+
+  if (!examesList || examesList.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground border rounded-lg bg-card/50">
         Nenhum exame cadastrado para este paciente.
@@ -47,7 +81,7 @@ export function ExamTable({ exames }: ExamTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {exames.map((exame) => (
+          {examesList.map((exame) => (
             <TableRow key={exame.id}>
               <TableCell className="font-medium">{exame.nome_exame}</TableCell>
               <TableCell>
@@ -104,6 +138,7 @@ export function ExamTable({ exames }: ExamTableProps) {
                   </Link>
                   
                   <button
+                    onClick={() => setExameToDelete(exame.id)}
                     className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                     title="Excluir"
                   >
@@ -115,6 +150,25 @@ export function ExamTable({ exames }: ExamTableProps) {
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={!!exameToDelete} onOpenChange={(open) => !open && setExameToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir Exame</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setExameToDelete(null)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Excluindo..." : "Excluir"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
