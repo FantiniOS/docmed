@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Clock, User, Stethoscope, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,9 +54,18 @@ function getStatusBadge(dataString: string) {
 }
 
 export function ConsultaList({ initialConsultas }: { initialConsultas: ConsultaComRelacionamentos[] }) {
+  const [mounted, setMounted] = useState(false);
   const [consultas, setConsultas] = useState<ConsultaComRelacionamentos[]>(initialConsultas);
   const [consultaToDelete, setConsultaToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // Evita falhas de hidratação (Error 418) no SSR
+  }
 
   const handleDelete = async () => {
     if (!consultaToDelete) return;

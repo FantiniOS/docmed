@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   startOfMonth,
@@ -131,10 +131,15 @@ export function DashboardCalendar({
   exames,
 }: DashboardCalendarProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [newBookingDialogOpen, setNewBookingDialogOpen] = useState(false);
   const [eventsDialogOpen, setEventsDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Estados locais para update otimista
   const [localConsultas, setLocalConsultas] = useState(consultas);
@@ -285,6 +290,10 @@ export function DashboardCalendar({
 
   function handleToday() {
     setCurrentMonth(new Date());
+  }
+
+  if (!mounted) {
+    return null; // Evita erro 418 de hidratação (visto que dependemos de new Date())
   }
 
   return (
