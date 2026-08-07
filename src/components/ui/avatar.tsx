@@ -28,13 +28,14 @@ function Avatar({
 function AvatarImage({ className, src, ...props }: AvatarPrimitive.Image.Props) {
   // Evita o erro 418 (Hydration Mismatch) e 404 (Not Found) quando o banco de dados retorna
   // UUIDs puros em vez de URLs completas (ex: "d7f59aa9-3ffa...").
-  const isValidSrc = src && (
+  const isValidSrc = src && typeof src === "string" && (
     src.startsWith("http") || 
     src.startsWith("/") || 
     src.startsWith("data:") || 
     src.startsWith("blob:")
   );
-  const safeSrc = isValidSrc ? src : undefined;
+  // Se for um Blob, deixamos passar (apesar de ser raro no Next.js SSR)
+  const safeSrc = isValidSrc || (src && typeof src !== "string") ? src : undefined;
 
   return (
     <AvatarPrimitive.Image
