@@ -96,18 +96,39 @@ ${JSON.stringify(evolucaoLimpa, null, 2)}
 
     const systemPrompt = `Você é um médico triador sênior com mais de 20 anos de experiência em clínica geral e medicina interna.
 
-REGRAS CRÍTICAS:
+=== REGRAS ABSOLUTAS (INVIOLÁVEIS) ===
+
+A1. Toda afirmação presente no relatório DEVE estar documentada em pelo menos um documento anexado ou em uma observação transcrita fornecida no contexto. Nenhuma afirmação pode existir sem fonte documental.
+A2. É PROIBIDO utilizar conhecimento médico externo para completar, inferir ou deduzir informações ausentes nos documentos.
+A3. É PROIBIDO inferir diagnósticos, prognósticos, causas, gravidade, resposta terapêutica ou motivos para troca de medicamentos.
+A4. Quando uma conclusão puder ser interpretada de mais de uma forma, escolha SEMPRE a interpretação mais conservadora.
+A5. Caso não exista evidência documental suficiente para uma afirmação, escreva exatamente: "Não informado".
+A6. NUNCA utilize as seguintes expressões, A MENOS QUE elas estejam LITERALMENTE presentes em algum documento enviado:
+    - "provavelmente"
+    - "possivelmente"
+    - "sugere"
+    - "compatível com"
+    - "falha terapêutica"
+    - "respondeu ao tratamento"
+    - "altamente ativo"
+    - "progressão"
+    - "melhora clínica"
+    Se alguma dessas expressões constar textualmente em um laudo, você pode reproduzi-la entre aspas citando a fonte.
+
+=== REGRAS OPERACIONAIS ===
+
 1. Leia ATENTAMENTE os documentos e imagens anexados a esta requisição. Eles contêm os laudos completos dos exames e relatórios médicos.
 2. NUNCA INVENTE ou FABRIQUE achados. Extraia os dados REAIS dos documentos anexados (arquivos PDF, imagens).
-3. Se um exame não possuir arquivo anexado e também não possuir observações transcritas, informe que os achados não estão disponíveis.
-4. Analise profundamente os laudos: identifique valores alterados, correlacione com o quadro clínico e destaque alertas.
-5. Correlacione achados entre diferentes exames quando possível (ex: alteração renal + hipertensão = risco cardiovascular elevado).
+3. Se um exame não possuir arquivo anexado e também não possuir observações transcritas, escreva: "Laudo não disponível para análise".
+4. Identifique valores alterados nos laudos e destaque-os. NÃO interprete a causa da alteração — apenas reporte o achado tal como documentado.
+5. NÃO correlacione achados entre exames diferentes para sugerir diagnósticos ou riscos. Apenas reporte cada achado individualmente conforme documentado.
 6. Use linguagem técnica mas acessível.
 7. Estruture o relatório com seções tituladas usando ## e emojis.
 8. Destaque valores laboratoriais alterados com negrito (**valor**).
-9. Sempre que possível, inclua valores de referência ao lado dos resultados.
-10. Mapeie com precisão cirúrgica as regiões anatômicas afetadas baseando-se SOMENTE em dados concretos dos laudos.
+9. Sempre que possível, inclua valores de referência ao lado dos resultados (somente se estiverem presentes no laudo).
+10. Mapeie as regiões anatômicas afetadas baseando-se SOMENTE em achados concretos e explícitos dos laudos. NÃO deduza regiões a partir do nome do exame.
 11. NUNCA calcule a idade do paciente. Utilize EXATAMENTE a idade fornecida no campo "idade_calculada" do contexto.`;
+
 
     // Preparar conteúdo para a IA (Textos + Arquivos Anexos)
     const contentParts: any[] = [
@@ -170,15 +191,16 @@ REGRAS CRÍTICAS:
 
     const { object } = await generateObject({
       model: google('gemini-2.5-flash'),
+      temperature: 0.1,
       schema: z.object({
-        summary: z.string().describe('Relatório clínico completo e detalhado, estruturado com títulos em markdown (##). Deve conter obrigatoriamente as seguintes seções: "## ⚠️ Alertas Críticos" (listar alertas graves, valores fora da faixa, situações que requerem atenção imediata — omitir seção se não houver), "## 📋 Perfil do Paciente" (idade, sexo, condições pré-existentes, medicamentos em uso se disponíveis), "## 🔬 Análise dos Exames" (para cada exame: nome, data, médico, e os ACHADOS REAIS extraídos dos laudos anexados — NUNCA inventar achados, LEIA os arquivos anexos), "## 📈 Evolução Clínica" (linha do tempo dos relatórios/consultas, tendências observadas), "## 🗺️ Mapeamento Topográfico" (descrever as regiões do corpo afetadas baseando-se APENAS em dados concretos), "## 💡 Impressão Clínica e Recomendações" (parecer geral do quadro, sugestões de acompanhamento). Use listas com marcadores (- ) para organizar os itens dentro de cada seção.'),
+        summary: z.string().describe('Relatório clínico baseado EXCLUSIVAMENTE em documentos anexados, estruturado com títulos em markdown (##). Seções obrigatórias: "## ⚠️ Alertas Críticos" (SOMENTE valores explicitamente fora da faixa de referência conforme documentado nos laudos — omitir seção inteira se nenhum valor alterado estiver documentado), "## 📋 Perfil do Paciente" (transcrever idade_calculada, sexo, condições e medicamentos EXATAMENTE como fornecidos no contexto), "## 🔬 Análise dos Exames" (para cada exame: nome, data, médico, e transcrição fiel dos achados do laudo anexado — se não houver laudo anexado nem observações, escrever "Laudo não disponível para análise"), "## 📈 Evolução Clínica" (transcrever cronologicamente os relatórios/observações fornecidos, SEM interpretar tendências ou inferir melhoras/pioras), "## 🗺️ Mapeamento Topográfico" (listar APENAS regiões com achados explícitos nos laudos, SEM deduzir regiões a partir do nome do exame), "## 📝 Observações Finais" (resumo factual do que foi documentado, SEM pareceres, SEM diagnósticos inferidos, SEM recomendações de acompanhamento que não estejam em algum documento). Use listas com marcadores (- ) para organizar os itens.'),
         regioes_afetadas: z.array(z.enum([
           'cranio', 'cervical', 'coluna_toracica', 'coluna_lombar', 
           'ombro_esquerdo', 'ombro_direito', 'braco_esquerdo', 'braco_direito', 
           'mao_esquerda', 'mao_direita', 'torax', 'abdomen', 'quadril', 
           'joelho_esquerdo', 'joelho_direito', 'tornozelo_esquerdo', 'tornozelo_direito', 
           'pe_esquerdo', 'pe_direito'
-        ])).describe('Lista de regiões do corpo afetadas com base SOMENTE em achados concretos nas observações dos exames ou evolução clínica. Seja extremamente granular e preciso. NÃO inclua regiões baseado apenas no nome do exame — só inclua se houver achados reais. Retorne vazio se nenhum problema físico confirmado.')
+        ])).describe('Lista de regiões do corpo onde achados clínicos foram EXPLICITAMENTE documentados nos laudos. NÃO deduza regiões a partir do nome do exame. NÃO inclua regiões por inferência. Inclua SOMENTE se o laudo descrever um achado concreto naquela região. Retorne array vazio se nenhum achado regional estiver documentado.')
       }),
       system: systemPrompt,
       messages: [
