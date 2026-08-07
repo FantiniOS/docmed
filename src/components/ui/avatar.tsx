@@ -25,10 +25,21 @@ function Avatar({
   )
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+function AvatarImage({ className, src, ...props }: AvatarPrimitive.Image.Props) {
+  // Evita o erro 418 (Hydration Mismatch) e 404 (Not Found) quando o banco de dados retorna
+  // UUIDs puros em vez de URLs completas (ex: "d7f59aa9-3ffa...").
+  const isValidSrc = src && (
+    src.startsWith("http") || 
+    src.startsWith("/") || 
+    src.startsWith("data:") || 
+    src.startsWith("blob:")
+  );
+  const safeSrc = isValidSrc ? src : undefined;
+
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
+      src={safeSrc}
       className={cn(
         "aspect-square size-full rounded-full object-cover",
         className
