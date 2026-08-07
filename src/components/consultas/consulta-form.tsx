@@ -431,6 +431,8 @@ export function ConsultaForm({ familiares, medicos, initialData, defaultDate }: 
         <PatientHistoryTimeline
           familiarId={selectedFamiliarId}
           currentConsultaId={initialData?.id}
+          medicoId={selectedMedicoId === "none" ? null : selectedMedicoId}
+          especialidade={selectedEspecialidade}
         />
       </div>
     </div>
