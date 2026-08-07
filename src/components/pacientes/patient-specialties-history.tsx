@@ -20,14 +20,36 @@ export function PatientSpecialtiesHistory({ familiarId }: { familiarId: string }
         .lt("data_consulta", new Date().toISOString());
 
       if (data) {
-        const unique = new Set<string>();
+        const checkSimilarRoot = (a: string, b: string) => {
+          const normA = a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          const normB = b.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          if (normA.includes(normB) || normB.includes(normA)) return true;
+          const w1 = normA.split(/\s+/).filter(w => w.length > 4);
+          const w2 = normB.split(/\s+/).filter(w => w.length > 4);
+          for (const x of w1) {
+            for (const y of w2) {
+              if (x.substring(0, 5) === y.substring(0, 5)) return true;
+            }
+          }
+          return false;
+        };
+
+        const grouped: string[] = [];
         data.forEach((c: any) => {
           const esp = c.especialidade || c.medicos?.especialidade;
           if (esp) {
-            unique.add(esp);
+            const existingIdx = grouped.findIndex(g => checkSimilarRoot(g, esp));
+            if (existingIdx !== -1) {
+              // Keep the longer / more complete name if possible (e.g. "Ginecologia e Obstetrícia" over "ginecilogia")
+              if (esp.length > grouped[existingIdx].length) {
+                grouped[existingIdx] = esp;
+              }
+            } else {
+              grouped.push(esp);
+            }
           }
         });
-        setEspecialidades(Array.from(unique).sort());
+        setEspecialidades(grouped.sort());
       }
     }
     fetchEspecialidades();
