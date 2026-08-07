@@ -73,12 +73,26 @@ export function PatientHistoryTimeline({
             const matchesMedico = medicoId && docId === medicoId;
             
             const normalizeStr = (s: string | null | undefined) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
-            const normDocEspec = normalizeStr(docEspec);
             const normFilterEspec = normalizeStr(especialidade);
+            const normConsEspec = normalizeStr(c.especialidade);
+            const normMedEspec = normalizeStr(c.medicos?.especialidade);
             
-            const matchesEspecialidade = especialidade && docEspec && (
-              normDocEspec.includes(normFilterEspec) || 
-              normFilterEspec.includes(normDocEspec)
+            const checkSimilarRoot = (a: string, b: string) => {
+              if (!a || !b) return false;
+              if (a.includes(b) || b.includes(a)) return true;
+              const w1 = a.split(/\s+/).filter(w => w.length > 4);
+              const w2 = b.split(/\s+/).filter(w => w.length > 4);
+              for (const x of w1) {
+                for (const y of w2) {
+                  if (x.substring(0, 5) === y.substring(0, 5)) return true;
+                }
+              }
+              return false;
+            };
+            
+            const matchesEspecialidade = especialidade && (
+              checkSimilarRoot(normConsEspec, normFilterEspec) || 
+              checkSimilarRoot(normMedEspec, normFilterEspec)
             );
             
             if (!matchesMedico && !matchesEspecialidade) continue;
