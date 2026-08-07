@@ -71,7 +71,16 @@ export function PatientHistoryTimeline({
 
             // Regra B: Mesmo Médico (ou especialidade)
             const matchesMedico = medicoId && docId === medicoId;
-            const matchesEspecialidade = especialidade && docEspec === especialidade;
+            
+            const normalizeStr = (s: string | null) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
+            const normDocEspec = normalizeStr(docEspec);
+            const normFilterEspec = normalizeStr(especialidade);
+            
+            const matchesEspecialidade = especialidade && docEspec && (
+              normDocEspec.includes(normFilterEspec) || 
+              normFilterEspec.includes(normDocEspec)
+            );
+            
             if (!matchesMedico && !matchesEspecialidade) continue;
 
             history.push({
