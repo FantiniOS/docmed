@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ResumoClinicoBotao } from "@/components/pacientes/resumo-clinico-botao";
 import { PacienteTabs } from "@/components/pacientes/paciente-tabs";
+import { PatientSpecialtiesHistory } from "@/components/pacientes/patient-specialties-history";
 import { parseLocal } from "@/lib/utils";
 import type { Familiar, ConsultaComRelacionamentos, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 
@@ -270,6 +271,9 @@ export default async function PacientePerfilPage({ params }: PacientePageProps) 
       </div>
 
       <Separator />
+      
+      {/* Acesso Rápido ao Histórico por Especialidade */}
+      <PatientSpecialtiesHistory familiarId={familiar.id} />
       
       {/* Triagem IA e Mapeamento Corporal */}
       <ResumoClinicoBotao familiar={familiar} exames={exames} evolucao={relatorios} />
