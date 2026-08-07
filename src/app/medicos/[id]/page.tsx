@@ -61,9 +61,9 @@ export default async function MedicoDossierPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = await createServerSupabaseClient();
 
-  const { data: medico, error: medicoError } = await supabase.from("medicos").select("*").eq("id", id).single();
+  const { data: medico } = await supabase.from("medicos").select("*").eq("id", id).single();
   if (!medico) {
-    throw new Error(`DEBUG_INFO: Medico not found for ID: "${id}". Supabase Error: ${JSON.stringify(medicoError)}`);
+    notFound();
   }
 
   // Fetch Consultas, Exames, Relatorios in parallel
