@@ -36,6 +36,7 @@ import {
   familiarSchema,
   type FamiliarSchemaType,
   tiposSanguineos,
+  opcoesSexo,
 } from "@/lib/validations/familiar";
 
 export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType & { id?: string } }) {
@@ -58,6 +59,7 @@ export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType
     } : {
       nome: "",
       data_nascimento: "",
+      sexo: null,
       tipo_sanguineo: null,
       alergias: null,
       doencas_cronicas: null,
@@ -201,8 +203,8 @@ export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType
             )}
           </div>
 
-          {/* Data de Nascimento + Tipo Sanguíneo */}
-          <div className="grid sm:grid-cols-2 gap-4">
+          {/* Data de Nascimento + Sexo + Tipo Sanguíneo */}
+          <div className="grid sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="data_nascimento">
                 <Calendar className="w-3.5 h-3.5" />
@@ -219,6 +221,34 @@ export function PacienteForm({ initialData }: { initialData?: FamiliarSchemaType
                   {errors.data_nascimento.message}
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>
+                <User className="w-3.5 h-3.5" />
+                Sexo
+              </Label>
+              <Controller
+                control={control}
+                name="sexo"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(val) => field.onChange(val || null)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {opcoesSexo.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="space-y-2">

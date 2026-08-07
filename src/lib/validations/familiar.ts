@@ -15,6 +15,10 @@ export const familiarSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "Data de nascimento inválida",
     }),
+  sexo: z
+    .string()
+    .nullable()
+    .transform((val) => val || null),
   tipo_sanguineo: z
     .string()
     .nullable()
@@ -37,8 +41,16 @@ export const familiarSchema = z.object({
 export type FamiliarSchemaType = z.infer<typeof familiarSchema>;
 
 /**
+ * Opções de sexo biológico.
+ */
+export const opcoesSexo = [
+  "Masculino", "Feminino",
+] as const;
+
+/**
  * Opções de tipo sanguíneo para o select.
  */
 export const tiposSanguineos = [
   "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-",
 ] as const;
+

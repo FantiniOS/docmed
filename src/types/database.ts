@@ -10,6 +10,7 @@ export interface Familiar {
   id: string;
   nome: string;
   data_nascimento: string; // ISO date string (YYYY-MM-DD)
+  sexo: string | null;
   tipo_sanguineo: string | null;
   alergias: string | null;
   doencas_cronicas: string | null;
