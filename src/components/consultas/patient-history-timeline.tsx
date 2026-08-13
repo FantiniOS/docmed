@@ -46,19 +46,37 @@ export function PatientHistoryTimeline({
       setIsLoading(true);
 
       try {
-        const [consultasRes] = await Promise.all([
+        const [consultasRes, examesRes] = await Promise.all([
           supabase
             .from("consultas")
             .select("*, medicos(*)")
-            .eq("familiar_id", familiarId)
-            .order("data_consulta", { ascending: false }),
+            .eq("familiar_id", familiarId),
+          supabase
+            .from("exames")
+            .select("*, medicos(*)")
+            .eq("familiar_id", familiarId),
         ]);
 
         let history: TimelineEvent[] = [];
+        const hoje = new Date();
+
+        const normalizeStr = (s: string | null | undefined) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
+        const normFilterEspec = normalizeStr(especialidade);
+        
+        const checkSimilarRoot = (a: string, b: string) => {
+          if (!a || !b) return false;
+          if (a.includes(b) || b.includes(a)) return true;
+          const w1 = a.split(/\s+/).filter(w => w.length > 4);
+          const w2 = b.split(/\s+/).filter(w => w.length > 4);
+          for (const x of w1) {
+            for (const y of w2) {
+              if (x.substring(0, 5) === y.substring(0, 5)) return true;
+            }
+          }
+          return false;
+        };
 
         if (consultasRes.data) {
-          const hoje = new Date();
-
           for (const c of consultasRes.data) {
             if (c.id === currentConsultaId) continue;
 
@@ -72,23 +90,8 @@ export function PatientHistoryTimeline({
             // Regra B: Mesmo Médico (ou especialidade)
             const matchesMedico = medicoId && docId === medicoId;
             
-            const normalizeStr = (s: string | null | undefined) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
-            const normFilterEspec = normalizeStr(especialidade);
             const normConsEspec = normalizeStr(c.especialidade);
             const normMedEspec = normalizeStr(c.medicos?.especialidade);
-            
-            const checkSimilarRoot = (a: string, b: string) => {
-              if (!a || !b) return false;
-              if (a.includes(b) || b.includes(a)) return true;
-              const w1 = a.split(/\s+/).filter(w => w.length > 4);
-              const w2 = b.split(/\s+/).filter(w => w.length > 4);
-              for (const x of w1) {
-                for (const y of w2) {
-                  if (x.substring(0, 5) === y.substring(0, 5)) return true;
-                }
-              }
-              return false;
-            };
             
             const matchesEspecialidade = especialidade && (
               checkSimilarRoot(normConsEspec, normFilterEspec) || 
@@ -108,6 +111,36 @@ export function PatientHistoryTimeline({
               prescricao: c.prescricao || null,
               local: c.local_atendimento || null,
               tipoConsulta: c.tipo_consulta || null,
+            });
+          }
+        }
+
+        if (examesRes.data) {
+          for (const e of examesRes.data) {
+            const dataExame = new Date(e.data_exame);
+            if (dataExame > hoje) continue;
+
+            const docId = e.medico_id;
+            const docEspec = e.medicos?.especialidade || null;
+
+            const matchesMedico = medicoId && docId === medicoId;
+            const normMedEspec = normalizeStr(e.medicos?.especialidade);
+            
+            const matchesEspecialidade = especialidade && checkSimilarRoot(normMedEspec, normFilterEspec);
+            
+            if (!matchesMedico && !matchesEspecialidade) continue;
+
+            history.push({
+              id: `exame-${e.id}`,
+              type: "exame",
+              date: dataExame,
+              title: e.nome_exame || "Exame",
+              medico: e.medicos ? `Dr(a). ${e.medicos.nome}` : null,
+              especialidade: docEspec,
+              diagnostico: e.observacoes || null, // mapeado para a UI existente
+              prescricao: null,
+              local: e.local_atendimento || null,
+              tipoConsulta: e.tipo_exame || null, // mapeado para a UI existente
             });
           }
         }
@@ -202,7 +235,11 @@ export function PatientHistoryTimeline({
                   {/* Header do registro */}
                   <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/30 rounded-t-lg">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                      <CalendarCheck className="w-3.5 h-3.5 text-blue-500" />
+                      {event.type === "consulta" ? (
+                        <CalendarCheck className="w-3.5 h-3.5 text-blue-500" />
+                      ) : (
+                        <FileText className="w-3.5 h-3.5 text-purple-500" />
+                      )}
                       <span suppressHydrationWarning>
                         {format(event.date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </span>
@@ -214,21 +251,21 @@ export function PatientHistoryTimeline({
 
                   {/* Corpo do prontuário */}
                   <div className="p-3 space-y-2.5">
-                    {/* Motivo / Queixa Principal */}
+                    {/* Motivo / Queixa Principal ou Exame */}
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Queixa / Motivo
+                        {event.type === "consulta" ? "Queixa / Motivo" : "Nome do Exame"}
                       </span>
                       <p className="text-xs text-foreground mt-0.5 leading-relaxed">
                         {event.title}
                       </p>
                     </div>
 
-                    {/* Diagnóstico */}
+                    {/* Diagnóstico ou Observações */}
                     {event.diagnostico && (
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                          Diagnóstico
+                          {event.type === "consulta" ? "Diagnóstico" : "Observações"}
                         </span>
                         <p className="text-xs text-foreground mt-0.5 leading-relaxed whitespace-pre-wrap">
                           {event.diagnostico}
