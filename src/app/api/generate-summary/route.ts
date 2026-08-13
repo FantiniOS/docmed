@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateObject } from 'ai';
+import { generateText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 
@@ -192,27 +192,58 @@ A6. NUNCA utilize as seguintes expressões, A MENOS QUE elas estejam LITERALMENT
     // Aguardar o download de todos os arquivos
     await Promise.all(fetchPromises);
 
-    const { object } = await generateObject({
-      model: google('gemini-2.5-flash'),
-      temperature: 0.1,
-      schema: z.object({
-        summary: z.string().describe('Relatório clínico baseado EXCLUSIVAMENTE em documentos anexados, estruturado com títulos em markdown (##). Seções obrigatórias: "## ⚠️ Alertas Críticos" (SOMENTE valores explicitamente fora da faixa de referência conforme documentado nos laudos — omitir seção inteira se nenhum valor alterado estiver documentado), "## 📋 Perfil do Paciente" (transcrever idade_calculada, sexo, condições e medicamentos EXATAMENTE como fornecidos no contexto), "## 🔬 Análise dos Exames" (para cada exame: nome, data, médico, e transcrição fiel dos achados do laudo anexado — se não houver laudo anexado nem observações, escrever "Laudo não disponível para análise"), "## 📈 Evolução Clínica" (transcrever cronologicamente os relatórios/observações fornecidos, SEM interpretar tendências ou inferir melhoras/pioras), "## 🗺️ Mapeamento Topográfico" (listar APENAS regiões com achados explícitos nos laudos, SEM deduzir regiões a partir do nome do exame), "## 📝 Observações Finais" (resumo factual do que foi documentado, SEM pareceres, SEM diagnósticos inferidos, SEM recomendações de acompanhamento que não estejam em algum documento). Use listas com marcadores (- ) para organizar os itens.'),
-        regioes_afetadas: z.array(z.enum(VALID_BODY_PARTS as [string, ...string[]])).describe('Lista de regiões do corpo onde achados clínicos foram EXPLICITAMENTE documentados nos laudos. NÃO deduza regiões a partir do nome do exame. NÃO inclua regiões por inferência. Inclua SOMENTE se o laudo descrever um achado concreto naquela região. Retorne array vazio se nenhum achado regional estiver documentado.')
-      }),
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: contentParts
-        }
-      ]
-    });
+    // Atualização do prompt para forçar formato JSON
+    const systemPromptWithJson = systemPrompt + `
+    
+=== FORMATO DE RESPOSTA OBRIGATÓRIO ===
+Você DEVE retornar EXCLUSIVAMENTE um objeto JSON válido, sem nenhum texto adicional antes ou depois. 
+O objeto JSON deve ter exatamente a seguinte estrutura:
+{
+  "summary": "Seu relatório clínico estruturado em markdown aqui...",
+  "regioes_afetadas": ["cranio", "pelvis", ...] // Array de strings usando APENAS os valores válidos fornecidos.
+}`;
 
-    return NextResponse.json(object);
+    let textoIA = "";
+    try {
+      const { text } = await generateText({
+        model: google('gemini-2.5-flash'),
+        temperature: 0.1,
+        system: systemPromptWithJson,
+        messages: [
+          {
+            role: 'user',
+            content: contentParts
+          }
+        ]
+      });
+      textoIA = text;
+
+      // BLINDAGEM DO PARSER
+      const textoLimpo = textoIA.replace(/```json/g, '').replace(/```/g, '').trim();
+      let object;
+      
+      try {
+        object = JSON.parse(textoLimpo);
+      } catch (parseError: any) {
+        console.error("FALHA AO FAZER PARSE DO JSON. Texto limpo:", textoLimpo);
+        return NextResponse.json({ 
+          error: "Erro de formatação na resposta da IA: " + parseError.message, 
+          rawText: textoIA 
+        }, { status: 500 });
+      }
+
+      return NextResponse.json(object);
+    } catch (aiError: any) {
+      console.error("ERRO DURANTE A GERAÇÃO DA IA:", aiError);
+      return NextResponse.json(
+        { error: aiError.message || "Erro interno na comunicação com a IA", rawText: textoIA },
+        { status: 500 }
+      );
+    }
   } catch (error: any) {
-    console.error("ERRO COMPLETO NA API DE IA:", error);
+    console.error("ERRO COMPLETO NA ROTA:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Erro desconhecido" },
+      { error: error instanceof Error ? error.message : "Erro desconhecido", rawText: null },
       { status: 500 }
     );
   }
