@@ -7,6 +7,8 @@ import { z } from 'zod';
 // necessário porque o Gemini pode demorar ao ler múltiplos PDFs
 export const maxDuration = 60;
 
+import { VALID_BODY_PARTS } from '@/components/paciente/body-map';
+
 export async function GET() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   return NextResponse.json({ ok: true, key_exists: !!apiKey });
@@ -127,7 +129,8 @@ A6. NUNCA utilize as seguintes expressões, A MENOS QUE elas estejam LITERALMENT
 8. Destaque valores laboratoriais alterados com negrito (**valor**).
 9. Sempre que possível, inclua valores de referência ao lado dos resultados (somente se estiverem presentes no laudo).
 10. Mapeie as regiões anatômicas afetadas baseando-se SOMENTE em achados concretos e explícitos dos laudos. NÃO deduza regiões a partir do nome do exame.
-11. NUNCA calcule a idade do paciente. Utilize EXATAMENTE a idade fornecida no campo "idade_calculada" do contexto.`;
+11. NUNCA calcule a idade do paciente. Utilize EXATAMENTE a idade fornecida no campo "idade_calculada" do contexto.
+12. Se houver alterações clínicas, retorne um array 'partes_afetadas'. VOCÊ DEVE OBRIGATORIAMENTE escolher os valores apenas desta lista exata: [${VALID_BODY_PARTS.join(', ')}]. Para exames ginecológicos ou do trato reprodutor, utilize 'pelvis' (ou o ID correspondente).`;
 
 
     // Preparar conteúdo para a IA (Textos + Arquivos Anexos)
@@ -194,13 +197,7 @@ A6. NUNCA utilize as seguintes expressões, A MENOS QUE elas estejam LITERALMENT
       temperature: 0.1,
       schema: z.object({
         summary: z.string().describe('Relatório clínico baseado EXCLUSIVAMENTE em documentos anexados, estruturado com títulos em markdown (##). Seções obrigatórias: "## ⚠️ Alertas Críticos" (SOMENTE valores explicitamente fora da faixa de referência conforme documentado nos laudos — omitir seção inteira se nenhum valor alterado estiver documentado), "## 📋 Perfil do Paciente" (transcrever idade_calculada, sexo, condições e medicamentos EXATAMENTE como fornecidos no contexto), "## 🔬 Análise dos Exames" (para cada exame: nome, data, médico, e transcrição fiel dos achados do laudo anexado — se não houver laudo anexado nem observações, escrever "Laudo não disponível para análise"), "## 📈 Evolução Clínica" (transcrever cronologicamente os relatórios/observações fornecidos, SEM interpretar tendências ou inferir melhoras/pioras), "## 🗺️ Mapeamento Topográfico" (listar APENAS regiões com achados explícitos nos laudos, SEM deduzir regiões a partir do nome do exame), "## 📝 Observações Finais" (resumo factual do que foi documentado, SEM pareceres, SEM diagnósticos inferidos, SEM recomendações de acompanhamento que não estejam em algum documento). Use listas com marcadores (- ) para organizar os itens.'),
-        regioes_afetadas: z.array(z.enum([
-          'cranio', 'cervical', 'coluna_toracica', 'coluna_lombar', 
-          'ombro_esquerdo', 'ombro_direito', 'braco_esquerdo', 'braco_direito', 
-          'mao_esquerda', 'mao_direita', 'torax', 'abdomen', 'quadril', 
-          'joelho_esquerdo', 'joelho_direito', 'tornozelo_esquerdo', 'tornozelo_direito', 
-          'pe_esquerdo', 'pe_direito'
-        ])).describe('Lista de regiões do corpo onde achados clínicos foram EXPLICITAMENTE documentados nos laudos. NÃO deduza regiões a partir do nome do exame. NÃO inclua regiões por inferência. Inclua SOMENTE se o laudo descrever um achado concreto naquela região. Retorne array vazio se nenhum achado regional estiver documentado.')
+        regioes_afetadas: z.array(z.enum(VALID_BODY_PARTS as [string, ...string[]])).describe('Lista de regiões do corpo onde achados clínicos foram EXPLICITAMENTE documentados nos laudos. NÃO deduza regiões a partir do nome do exame. NÃO inclua regiões por inferência. Inclua SOMENTE se o laudo descrever um achado concreto naquela região. Retorne array vazio se nenhum achado regional estiver documentado.')
       }),
       system: systemPrompt,
       messages: [

@@ -30,7 +30,10 @@ const REGION_COORDINATES: Record<string, { top: string; left: string; label: str
   'tornozelo_esquerdo': { left: '64%', top: '92.22%', label: 'Tornozelo Esquerdo' },
   'pe_direito': { left: '39%', top: '95.56%', label: 'Pé Direito' },
   'pe_esquerdo': { left: '61%', top: '95.56%', label: 'Pé Esquerdo' },
+  'pelvis': { left: '50%', top: '48.5%', label: 'Pelve / Trato Reprodutor' },
 };
+
+export const VALID_BODY_PARTS = Object.keys(REGION_COORDINATES);
 
 export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
   return (
@@ -50,7 +53,7 @@ export function BodyMap({ regioesAfetadas = [], className }: BodyMapProps) {
         />
 
         {/* Camada de Pinos de Alerta (Granular via DIVs Absolutas) */}
-        {regioesAfetadas.map((region) => {
+        {(regioesAfetadas || []).map((region) => {
           const coord = REGION_COORDINATES[region];
           if (!coord) return null; // Ignora se a região não existir no mapa
           
