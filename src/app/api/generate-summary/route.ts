@@ -7,7 +7,7 @@ import { z } from 'zod';
 // necessário porque o Gemini pode demorar ao ler múltiplos PDFs
 export const maxDuration = 60;
 
-import { VALID_BODY_PARTS } from '@/components/paciente/body-map';
+import { VALID_BODY_PARTS } from '@/lib/constants/body-map';
 
 export async function GET() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
