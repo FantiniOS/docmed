@@ -6,6 +6,12 @@ import { ptBR } from "date-fns/locale";
 import { Clock, Stethoscope, FileText, CalendarCheck, ClipboardList, Pill, MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface PatientHistoryTimelineProps {
   familiarId: string;
@@ -35,6 +41,7 @@ export function PatientHistoryTimeline({
 }: PatientHistoryTimelineProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [eventoSelecionado, setEventoSelecionado] = useState<TimelineEvent | null>(null);
 
   useEffect(() => {
     async function fetchHistory() {
@@ -231,7 +238,10 @@ export function PatientHistoryTimeline({
                 </div>
 
                 {/* Prontuário Card */}
-                <div className="bg-background rounded-lg border border-border shadow-sm">
+                <div 
+                  className="bg-background rounded-lg border border-border shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => setEventoSelecionado(event)}
+                >
                   {/* Header do registro */}
                   <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/30 rounded-t-lg">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
@@ -322,6 +332,76 @@ export function PatientHistoryTimeline({
           </div>
         )}
       </div>
+
+      <Dialog open={!!eventoSelecionado} onOpenChange={(open) => !open && setEventoSelecionado(null)}>
+        <DialogContent className="sm:max-w-[500px] overflow-y-auto max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {eventoSelecionado?.type === "consulta" ? "Detalhes da Consulta" : "Detalhes do Exame"}
+            </DialogTitle>
+          </DialogHeader>
+          {eventoSelecionado && (
+            <div className="space-y-4 pt-4">
+              <div className="flex justify-between items-start text-sm">
+                <div>
+                  <span className="font-semibold block">
+                    {eventoSelecionado.type === "consulta" ? "Motivo da Consulta" : "Nome do Exame"}
+                  </span>
+                  <span className="text-muted-foreground">{eventoSelecionado.title}</span>
+                </div>
+                <div className="text-right shrink-0 ml-4">
+                  <span className="font-semibold block">Data</span>
+                  <span className="text-muted-foreground capitalize" suppressHydrationWarning>
+                    {format(eventoSelecionado.date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  </span>
+                </div>
+              </div>
+              
+              {(eventoSelecionado?.medico || eventoSelecionado?.especialidade) && (
+                <div className="text-sm">
+                  <span className="font-semibold block">
+                    {eventoSelecionado.type === "consulta" ? "Médico Responsável" : "Médico Solicitante"}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {eventoSelecionado.medico || "Não informado"} {eventoSelecionado.especialidade ? `(${eventoSelecionado.especialidade})` : ""}
+                  </span>
+                </div>
+              )}
+
+              {eventoSelecionado?.diagnostico && (
+                <div className="text-sm">
+                  <span className="font-semibold block">
+                    {eventoSelecionado.type === "consulta" ? "Diagnóstico / Evolução" : "Resultado / Laudo"}
+                  </span>
+                  <span className="text-muted-foreground whitespace-pre-wrap">
+                    {eventoSelecionado.diagnostico}
+                  </span>
+                </div>
+              )}
+
+              {eventoSelecionado?.prescricao && (
+                <div className="text-sm">
+                  <span className="font-semibold block">Prescrição Completa</span>
+                  <span className="text-muted-foreground whitespace-pre-wrap">
+                    {eventoSelecionado.prescricao}
+                  </span>
+                </div>
+              )}
+              
+              {(eventoSelecionado?.local || eventoSelecionado?.tipoConsulta) && (
+                <div className="text-sm">
+                  <span className="font-semibold block">
+                    {eventoSelecionado.type === "consulta" ? "Local / Tipo de Consulta" : "Laboratório / Clínica / Tipo"}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {[eventoSelecionado.local, eventoSelecionado.tipoConsulta].filter(Boolean).join(" — ")}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
