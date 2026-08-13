@@ -176,6 +176,12 @@ function parseMarkdownToBlocks(markdown: string): TextBlock[] {
   return blocks;
 }
 
+interface ImageBounds {
+  top: number;
+  bottom: number;
+  leftX: number;
+}
+
 /** Renders a single text, handling inline **bold** markers. Returns final Y. */
 function renderInlineText(
   pdf: jsPDF,
@@ -184,8 +190,20 @@ function renderInlineText(
   y: number,
   maxWidth: number,
   fontSize: number,
-  baseColor: readonly [number, number, number]
+  baseColor: readonly [number, number, number],
+  imageBounds?: ImageBounds | null
 ): number {
+  // Check if we are on the first page and within image bounds
+  let effectiveMaxWidth = maxWidth;
+  if (imageBounds && pdf.getCurrentPageInfo().pageNumber === 1) {
+    if (y >= imageBounds.top && y <= imageBounds.bottom) {
+      const availableWidth = imageBounds.leftX - x;
+      if (availableWidth > 0 && availableWidth < effectiveMaxWidth) {
+        effectiveMaxWidth = availableWidth;
+      }
+    }
+  }
+
   // Split by **bold** segments
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   
@@ -193,7 +211,7 @@ function renderInlineText(
   const plainText = text.replace(/\*\*/g, "");
   pdf.setFontSize(fontSize);
   pdf.setFont("helvetica", "normal");
-  const wrappedLines = pdf.splitTextToSize(plainText, maxWidth) as string[];
+  const wrappedLines = pdf.splitTextToSize(plainText, effectiveMaxWidth) as string[];
   
   // For each wrapped line, render with bold segments
   let currentY = y;
@@ -287,7 +305,7 @@ function renderInlineText(
 // RENDER BLOCKS TO PDF
 // =============================================
 
-function renderBlocks(pdf: jsPDF, blocks: TextBlock[], startY: number): number {
+function renderBlocks(pdf: jsPDF, blocks: TextBlock[], startY: number, imageBounds?: ImageBounds | null): number {
   let y = startY;
 
   for (const block of blocks) {
@@ -301,10 +319,19 @@ function renderBlocks(pdf: jsPDF, blocks: TextBlock[], startY: number): number {
         y = checkPageBreak(pdf, y, spaceBefore + fontSize * 0.5 + spaceAfter + 2);
         y += spaceBefore;
 
+        // Note: For headings we don't strictly enforce image bounds wrapping 
+        // because they are short and have background boxes that span the whole width,
+        // but if there's an image, we should probably stop drawing the background box across the image.
+        // Actually, the main heading "Perfil do Paciente" will be drawn before the image.
+        let boxWidth = CONTENT_WIDTH + 4;
+        if (imageBounds && pdf.getCurrentPageInfo().pageNumber === 1 && y >= imageBounds.top && y <= imageBounds.bottom) {
+          boxWidth = imageBounds.leftX - MARGIN_LEFT;
+        }
+
         if (isMainHeading) {
           // Background bar for main headings
           pdf.setFillColor(COLOR_LIGHT_BG[0], COLOR_LIGHT_BG[1], COLOR_LIGHT_BG[2]);
-          pdf.roundedRect(MARGIN_LEFT - 2, y - 5, CONTENT_WIDTH + 4, 9, 1.5, 1.5, "F");
+          pdf.roundedRect(MARGIN_LEFT - 2, y - 5, boxWidth, 9, 1.5, 1.5, "F");
           
           // Accent bar
           pdf.setFillColor(COLOR_PRIMARY[0], COLOR_PRIMARY[1], COLOR_PRIMARY[2]);
@@ -322,7 +349,7 @@ function renderBlocks(pdf: jsPDF, blocks: TextBlock[], startY: number): number {
         }
         
         pdf.text(block.text, MARGIN_LEFT + (isMainHeading ? 3 : 0), y);
-        y += spaceAfter;
+        y += (fontSize * 0.45) + spaceAfter;
 
         if (isMainHeading) {
           y += 2;
@@ -338,7 +365,7 @@ function renderBlocks(pdf: jsPDF, blocks: TextBlock[], startY: number): number {
         pdf.circle(MARGIN_LEFT + 2, y - 1.2, 0.8, "F");
         
         // Bullet text with potential bold
-        y = renderInlineText(pdf, block.text, MARGIN_LEFT + 6, y, CONTENT_WIDTH - 6, 9, COLOR_DARK);
+        y = renderInlineText(pdf, block.text, MARGIN_LEFT + 6, y, CONTENT_WIDTH - 6, 9, COLOR_DARK, imageBounds);
         y += 1;
         break;
       }
@@ -347,11 +374,18 @@ function renderBlocks(pdf: jsPDF, blocks: TextBlock[], startY: number): number {
         const plainText = block.text.replace(/\*\*/g, "");
         pdf.setFontSize(9);
         pdf.setFont("helvetica", "normal");
-        const lines = pdf.splitTextToSize(plainText, CONTENT_WIDTH) as string[];
+        
+        // Use effective maxWidth for block height calculation
+        let effectiveMaxWidth = CONTENT_WIDTH;
+        if (imageBounds && pdf.getCurrentPageInfo().pageNumber === 1 && y >= imageBounds.top && y <= imageBounds.bottom) {
+          effectiveMaxWidth = imageBounds.leftX - MARGIN_LEFT;
+        }
+        
+        const lines = pdf.splitTextToSize(plainText, effectiveMaxWidth) as string[];
         const blockHeight = lines.length * 4.5;
         
         y = checkPageBreak(pdf, y, blockHeight);
-        y = renderInlineText(pdf, block.text, MARGIN_LEFT, y, CONTENT_WIDTH, 9, COLOR_DARK);
+        y = renderInlineText(pdf, block.text, MARGIN_LEFT, y, CONTENT_WIDTH, 9, COLOR_DARK, imageBounds);
         y += 2;
         break;
       }
@@ -395,67 +429,58 @@ export async function gerarPDFProfissional(
 
   // 1. Header
   let y = drawHeader(pdf, paciente.nome);
+  const headerBottomY = y;
 
-  // 2. Parse and render the markdown summary
-  const blocks = parseMarkdownToBlocks(resumoMarkdown);
-  y = renderBlocks(pdf, blocks, y);
-
-  // 3. Body Map Section
-  y = checkPageBreak(pdf, y, 80);
-  y += 6;
-  drawLine(pdf, y);
-  y += 8;
-
-  // Section title
-  pdf.setFontSize(12);
-  pdf.setFont("helvetica", "bold");
-  setColor(pdf, COLOR_DARK);
-  pdf.setFillColor(COLOR_LIGHT_BG[0], COLOR_LIGHT_BG[1], COLOR_LIGHT_BG[2]);
-  pdf.roundedRect(MARGIN_LEFT - 2, y - 5, CONTENT_WIDTH + 4, 9, 1.5, 1.5, "F");
-  pdf.setFillColor(COLOR_PRIMARY[0], COLOR_PRIMARY[1], COLOR_PRIMARY[2]);
-  pdf.rect(MARGIN_LEFT - 2, y - 5, 1.5, 9, "F");
-  pdf.text("Mapa Corporal — Focos Ativos", MARGIN_LEFT + 3, y);
-  y += 8;
-
-  // Regions list
-  if (regioesAfetadas.length > 0) {
-    pdf.setFontSize(8);
-    pdf.setFont("helvetica", "normal");
-    setColor(pdf, COLOR_MUTED);
-    const regionLabels = regioesAfetadas.map(r => r.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
-    pdf.text(`Regiões identificadas: ${regionLabels.join(", ")}`, MARGIN_LEFT, y);
-    y += 6;
-  }
-
-  // Capture body map image
+  // 2. Capture and draw body map image on the first page
   const bodyMapImg = await captureBodyMap();
+  
+  let imgWidth = 0;
+  let imgHeight = 0;
+  let imgX = 0;
+  let imgY = headerBottomY + 5; // Starts slightly below header
+  
   if (bodyMapImg) {
-    y = checkPageBreak(pdf, y, 90);
-    
     const img = new window.Image();
     img.src = bodyMapImg;
-
     await new Promise<void>((resolve) => {
       img.onload = () => {
-        const imgWidth = 55;
-        const imgHeight = (img.height * imgWidth) / img.width;
-        const imgX = (PAGE_WIDTH - imgWidth) / 2;
+        imgWidth = 35; // Smaller size for the first page corner
+        imgHeight = (img.height * imgWidth) / img.width;
+        imgX = PAGE_WIDTH - MARGIN_RIGHT - imgWidth - 5; // Right aligned with 5mm padding
         
         // Background card for the body map
         pdf.setFillColor(COLOR_LIGHT_BG[0], COLOR_LIGHT_BG[1], COLOR_LIGHT_BG[2]);
         pdf.setDrawColor(COLOR_BORDER[0], COLOR_BORDER[1], COLOR_BORDER[2]);
-        pdf.roundedRect(imgX - 5, y - 3, imgWidth + 10, imgHeight + 6, 3, 3, "FD");
+        pdf.roundedRect(imgX - 3, imgY - 3, imgWidth + 6, imgHeight + 6, 2, 2, "FD");
         
-        pdf.addImage(bodyMapImg, "PNG", imgX, y, imgWidth, imgHeight);
+        pdf.addImage(bodyMapImg, "PNG", imgX, imgY, imgWidth, imgHeight);
+        
+        if (regioesAfetadas.length > 0) {
+          pdf.setFontSize(6);
+          pdf.setFont("helvetica", "bold");
+          setColor(pdf, COLOR_ALERT);
+          pdf.text("Focos Ativos", imgX + imgWidth / 2, imgY + imgHeight + 2, { align: "center" });
+        }
         resolve();
       };
       img.onerror = () => resolve();
     });
   }
 
-  // 4. Add footers to all pages (with correct total count)
+  // 3. Define Image Bounds to avoid text overlapping with the map
+  const imageBounds = bodyMapImg ? {
+     top: imgY - 5,
+     bottom: imgY + imgHeight + 8,
+     leftX: imgX - 5 // Text should not go past this X coordinate
+  } : null;
+
+  // 4. Parse and render the markdown summary
+  const blocks = parseMarkdownToBlocks(resumoMarkdown);
+  y = renderBlocks(pdf, blocks, y, imageBounds);
+
+  // 5. Add footers to all pages (with correct total count)
   addAllFooters(pdf);
 
-  // 5. Save
+  // 6. Save
   pdf.save(`dossie-clinico-${paciente.nome.replace(/\s+/g, "_")}.pdf`);
 }
