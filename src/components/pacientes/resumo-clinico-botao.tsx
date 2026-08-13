@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/toast";
 import type { Familiar, ExameComRelacionamentos, RelatorioComRelacionamentos } from "@/types/database";
 import { BodyMap } from "@/components/paciente/body-map";
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { gerarPDFProfissional } from "@/lib/pdf-generator";
 
 interface ResumoClinicoSecaoProps {
@@ -100,8 +101,22 @@ export function ResumoClinicoBotao({
           <CardContent className="p-6">
             <div className="grid md:grid-cols-[1fr_300px] gap-8">
               <div className="flex flex-col gap-4">
-                <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl text-sm leading-relaxed border shadow-sm flex-1 overflow-auto prose prose-sm dark:prose-invert prose-headings:text-base prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1 prose-li:my-0.5 prose-ul:my-1 max-w-none">
-                  <ReactMarkdown>{resumo}</ReactMarkdown>
+                <div className="p-5 bg-white dark:bg-zinc-900 rounded-xl text-sm leading-relaxed border shadow-sm flex-1 overflow-auto max-w-none w-full flex flex-col gap-4">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-xl font-bold text-emerald-700 dark:text-emerald-500 mt-6 mb-4" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 mt-6 mb-4 border-b pb-2" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300 mt-4 mb-3" {...props} />,
+                      h4: ({node, ...props}) => <h4 className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-4 mb-2" {...props} />,
+                      p: ({node, ...props}) => <p className="text-sm text-slate-600 dark:text-slate-300 mb-3" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-2 mb-4 flex flex-col" {...props} />,
+                      li: ({node, ...props}) => <li className="text-sm text-slate-600 dark:text-slate-300 flex items-start gap-2" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold text-slate-900 dark:text-white" {...props} />
+                    }}
+                  >
+                    {resumo}
+                  </ReactMarkdown>
                 </div>
               </div>
   
